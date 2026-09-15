@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ครู — ระบบเช็คชื่อนักเรียน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-head">
+  <h1>เช็คชื่อ / ยื่นลา (ครู)</h1>
+  <p id="headSub">เข้าสู่ระบบสำหรับครู</p>
+</div>
+
+<div class="wrap" id="app">
+  <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+const TKEY = 'attn_teacher_token';
+let USER = null;
+let AT = { classes:[], classId:'', date:'', records:[] };
+let TAB = 'attendance';
+let pendingPhoto = null;
+
+const ATT_TH = { present:'มา', late:'สาย', absent:'ขาด', leave:'ลา', activity:'กิจกรรม' };
+const ATT_ORDER = ['present','late','absent','leave','activity'];
+const LEAVE_TYPES = { sick:'ลาป่วย', personal:'ลากิจ', vacation:'ลาพักผ่อน', official:'ไปราชการ', maternity:'ลาคลอด', other:'อื่นๆ' };
+const STATUS_TH = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ' };
+
+function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function initials(n){ return (n||'?').trim().charAt(0); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function thaiDate(ymd){ if(!ymd) return ''; const p=String(ymd).split('-'); const m=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; return parseInt(p[2],10)+' '+m[parseInt(p[1],10)]+' '+(parseInt(p[0],10)+543); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
+function getToken(){ try{ return localStorage.getItem(TKEY)||''; }catch(e){ return ''; } }
+function setToken(t){ try{ localStorage.setItem(TKEY,t); }catch(e){} }
+function clearToken(){ try{ localStorage.removeItem(TKEY); }catch(e){} }
+function render(html){ document.getElementById('app').innerHTML = html; }
+
+async function api(action, data){
+  const res = await fetch(GAS_API_URL, { method:'POST', body: JSON.stringify(Object.assign({action}, data||{})) });
+  return res.json();
+}
+
+async function boot(){
+  if(!GAS_API_URL){ render('<div class="notice">ยังไม่ได้ตั้งค่า GAS_API_URL ใน config.js</div>'); return; }
+  const t = getToken();
+  if(!t){ renderLogin(); return; }
+  const res = await api('checkSession', { token:t });
+  if(res.status==='success'){ USER=res.user; renderApp(); }
+  else { clearToken(); renderLogin(); }
+}
+
+function renderLogin(){
+  render('<div class="card">'
+    + '<div class="field"><label>ชื่อผู้ใช้</label><input class="ctl" id="u" autocomplete="username"></div>'
+    + '<div class="field"><label>รหัสผ่าน</label><input class="ctl" id="p" type="password" autocomplete="current-password"></div>'
+    + '<button class="btn btn-primary" id="btnLogin" onclick="doLogin()">เข้าสู่ระบบ</button>'
+    + '</div>');
+  document.getElementById('headSub').textContent='เข้าสู่ระบบสำหรับครู';
+}
+async function doLogin(){
+  const u=document.getElementById('u').value.trim(), p=document.getElementById('p').value;
+  if(!u||!p){ toast('กรอกชื่อผู้ใช้และรหัสผ่าน'); return; }
+  const btn=document.getElementById('btnLogin'); btn.disabled=true; btn.textContent='กำลังเข้าสู่ระบบ...';
+  const res = await api('login', { username:u, password:p });
+  if(res.status==='success'){ setToken(res.token); USER=res.user; renderApp(); }
+  else { toast(res.message); btn.disabled=false; btn.textContent='เข้าสู่ระบบ'; }
+}
+
+function renderApp(){
+  document.getElementById('headSub').textContent = 'สวัสดีคุณครู '+USER.name;
+  const tabs = '<div class="tabs">'
+    + '<div class="tab'+(TAB==='attendance'?' on':'')+'" onclick="switchTab(\'attendance\')">เช็คชื่อ</div>'
+    + '<div class="tab'+(TAB==='leave'?' on':'')+'" onclick="switchTab(\'leave\')">ยื่นลาของฉัน</div>'
+    + '</div><div id="tabBody"></div>'
+    + '<div style="text-align:center;margin-top:18px"><button class="btn btn-ghost btn-sm" onclick="doLogout()">ออกจากระบบ</button></div>';
+  render(tabs);
+  if(TAB==='attendance') loadAttendance(); else loadLeaveTab();
+}
+function switchTab(t){ TAB=t; renderApp(); }
+function doLogout(){ clearToken(); USER=null; renderLogin(); }
+
+/* ---------- เช็คชื่อ ---------- */
+async function loadAttendance(){
+  AT.date = AT.date || todayStr();
+  document.getElementById('tabBody').innerHTML = '<div class="loading"><div class="spin"></div>กำลังโหลด...</div>';
+  const res = await api('getCheckableClasses', { token:getToken() });
+  AT.classes = (res.status==='success')?res.data:[];
+  if(!AT.classId && AT.classes.length) AT.classId = AT.classes[0].id;
+  renderAttShell();
+  if(AT.classId) fetchAtt();
+}
+function renderAttShell(){
+  if(!AT.classes.length){
+    document.getElementById('tabBody').innerHTML = '<div class="notice">ยังไม่มีชั้นเรียนที่คุณเช็คได้ (ต้องเป็นครูประจำชั้น)</div>';
+    return;
+  }
+  let opt=''; AT.classes.forEach(function(c){ opt+='<option value="'+c.id+'"'+(AT.classId===c.id?' selected':'')+'>'+esc(c.name)+'</option>'; });
+  const h = '<div class="card"><div class="row2">'
+    + '<div class="field"><label>ชั้นเรียน</label><select class="ctl" id="atClass">'+opt+'</select></div>'
+    + '<div class="field"><label>วันที่</label><input type="date" class="ctl" id="atDate" value="'+AT.date+'"></div>'
+    + '</div><button class="btn btn-ghost btn-sm" onclick="markAll()">มาครบทั้งห้อง</button></div>'
+    + '<div id="atList"></div>';
+  document.getElementById('tabBody').innerHTML = h;
+  document.getElementById('atClass').onchange=function(){ AT.classId=this.value; fetchAtt(); };
+  document.getElementById('atDate').onchange=function(){ AT.date=this.value; fetchAtt(); };
+}
+async function fetchAtt(){
+  document.getElementById('atList').innerHTML='<div class="loading"><div class="spin"></div>โหลดรายชื่อ...</div>';
+  const res = await api('getAttendanceData', { token:getToken(), class_id:AT.classId, date:AT.date });
+  if(res.status!=='success'){ document.getElementById('atList').innerHTML='<div class="notice">'+esc(res.message)+'</div>'; return; }
+  AT.records = res.records;
+  renderAttList(res);
+}
+function renderAttList(res){
+  if(!res.records.length){ document.getElementById('atList').innerHTML='<div class="notice">ยังไม่มีนักเรียนในชั้นนี้</div>'; return; }
+  let h='';
+  if(res.saved) h+='<div style="font-size:12.5px;color:#8a93a6;margin:4px 2px 10px">บันทึกแล้ว • '+thaiDate(res.date)+' (แก้แล้วบันทึกซ้ำได้)</div>';
+  res.records.forEach(function(r, i){
+    let seg='<div class="seg" data-sid="'+r.student_id+'">';
+    ATT_ORDER.forEach(function(st){ seg+='<button data-st="'+st+'" class="'+(r.status===st?'on':'')+'" onclick="setSt(this,\''+r.student_id+'\',\''+st+'\')">'+ATT_TH[st]+'</button>'; });
+    seg+='</div>';
+    h+='<div class="att-item"><div class="no">'+(i+1)+'</div><div class="nm">'+esc(r.full_name)+'</div></div>'+'<div style="margin:-4px 2px 10px">'+seg+'</div>';
+  });
+  h+='<div class="savebar"><button class="btn btn-primary" id="btnSaveAtt" onclick="saveAtt()">บันทึกเช็คชื่อ</button></div>';
+  document.getElementById('atList').innerHTML=h;
+}
+function setSt(btn, sid, st){
+  const seg=btn.closest('.seg'); seg.querySelectorAll('button').forEach(b=>b.classList.remove('on')); btn.classList.add('on');
+  const r=AT.records.find(x=>x.student_id===sid); if(r) r.status=st;
+}
+function markAll(){
+  AT.records.forEach(r=>r.status='present');
+  document.querySelectorAll('#atList .seg').forEach(function(seg){ seg.querySelectorAll('button').forEach(b=>b.classList.remove('on')); const pb=seg.querySelector('button[data-st=present]'); if(pb) pb.classList.add('on'); });
+  toast('ตั้งทุกคนเป็นมาแล้ว');
+}
+async function saveAtt(){
+  const btn=document.getElementById('btnSaveAtt'); btn.disabled=true; btn.textContent='กำลังบันทึก...';
+  const payload={ class_id:AT.classId, date:AT.date, records:AT.records.map(r=>({student_id:r.student_id,status:r.status,note:''})) };
+  const res = await api('saveAttendance', { token:getToken(), payload:payload });
+  btn.disabled=false; btn.textContent='บันทึกเช็คชื่อ';
+  if(res.status==='success'){ toast(res.message); fetchAtt(); } else toast(res.message);
+}
+
+/* ---------- ยื่นลาของฉัน ---------- */
+async function loadLeaveTab(){
+  pendingPhoto=null;
+  document.getElementById('tabBody').innerHTML = '<div class="loading"><div class="spin"></div>กำลังโหลด...</div>';
+  const res = await api('myLeaves', { token:getToken() });
+  const mine = (res.status==='success')?res.data:[];
+  let typeChips=''; Object.keys(LEAVE_TYPES).forEach(function(k,i){ typeChips+='<div class="chip'+(i===0?' on':'')+'" data-v="'+k+'">'+LEAVE_TYPES[k]+'</div>'; });
+  let h = '<div class="card">'
+    + '<div class="field"><label>ประเภทการลา</label><div class="chips" id="tltype">'+typeChips+'</div></div>'
+    + '<div class="row2">'
+      + '<div class="field"><label>ตั้งแต่</label><input type="date" class="ctl" id="tFrom" value="'+todayStr()+'"></div>'
+      + '<div class="field"><label>ถึง</label><input type="date" class="ctl" id="tTo" value="'+todayStr()+'"></div>'
+    + '</div>'
+    + '<div class="field"><label>เหตุผล</label><textarea class="ctl" id="tReason" rows="3"></textarea></div>'
+    + '<div class="field"><label>แนบเอกสาร (ไม่บังคับ)</label><input type="file" class="ctl" id="tPhoto" accept="image/*"><img class="photo-prev hidden" id="tPhotoPrev"></div>'
+    + '<button class="btn btn-primary" id="btnTLeave" onclick="submitTeacherLeave()">ส่งใบลา</button>'
+    + '</div>';
+  h += '<div class="sec-title">ใบลาของฉัน</div>';
+  if(!mine.length) h+='<div class="card" style="text-align:center;color:#8a93a6">ยังไม่มีรายการ</div>';
+  else mine.forEach(function(l){
+    const cur = (l.status==='pending' && l.approvals) ? l.approvals.find(a=>a.status==='pending') : null;
+    h+='<div class="leave-item"><div class="top"><span class="nm">'+(LEAVE_TYPES[l.leave_type]||l.leave_type)+'</span>'
+      + '<span class="badge b-'+l.status+'">'+(STATUS_TH[l.status]||l.status)+'</span></div>'
+      + '<div class="meta">'+thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' - '+thaiDate(l.date_to):'')+' • '+l.days+' วัน'
+      + (cur?' • รอ'+esc(cur.role_label||''):'')+'</div>'
+      + (l.reason?'<div class="rs">'+esc(l.reason)+'</div>':'')+'</div>';
+  });
+  document.getElementById('tabBody').innerHTML = h;
+
+  document.querySelectorAll('#tltype .chip').forEach(function(el){ el.onclick=function(){ document.querySelectorAll('#tltype .chip').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; });
+  document.getElementById('tPhoto').onchange=function(){ const f=this.files[0]; if(!f) return; if(f.size>4*1024*1024){ toast('รูปต้องไม่เกิน 4MB'); this.value=''; return; } const r=new FileReader(); r.onload=function(e){ pendingPhoto=e.target.result; const p=document.getElementById('tPhotoPrev'); p.src=e.target.result; p.classList.remove('hidden'); }; r.readAsDataURL(f); };
+}
+async function submitTeacherLeave(){
+  const typeEl=document.querySelector('#tltype .chip.on');
+  const payload={ token:getToken(),
+    leave_type: typeEl?typeEl.getAttribute('data-v'):'sick',
+    date_from: document.getElementById('tFrom').value,
+    date_to: document.getElementById('tTo').value,
+    reason: document.getElementById('tReason').value.trim(),
+    photo: pendingPhoto||'' };
+  if(!payload.date_from){ toast('เลือกวันที่'); return; }
+  const btn=document.getElementById('btnTLeave'); btn.disabled=true; btn.textContent='กำลังส่ง...';
+  const res = await api('submitTeacherLeave', payload);
+  if(res.status==='success'){ toast(res.message); loadLeaveTab(); }
+  else { toast(res.message); btn.disabled=false; btn.textContent='ส่งใบลา'; }
+}
+
+boot();
+</script>
+</body>
+</html>

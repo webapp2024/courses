@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ระบบเช็คชื่อนักเรียน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css">
+<link rel="stylesheet" href="style.css">
+<style>
+body{ padding-bottom:74px; }
+
+/* ── Tabbar ── */
+.tabbar{ position:fixed; bottom:0; left:0; right:0; z-index:50; background:#fff; border-top:1px solid var(--line); display:flex; padding:6px 0 calc(6px + env(safe-area-inset-bottom)); }
+.tabbar button{ flex:1; background:none; border:0; color:var(--soft); font-size:11.5px; font-weight:500; padding:5px 0; display:flex; flex-direction:column; align-items:center; gap:3px; font-family:inherit; cursor:pointer; }
+.tabbar button i{ font-size:20px; }
+.tabbar button.on{ color:var(--blue); }
+
+/* ── App Header ── */
+.app-head{ display:flex; align-items:center; gap:10px; }
+.head-settings{ background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); border-radius:10px; color:#fff; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:17px; cursor:pointer; flex-shrink:0; }
+
+/* ── Settings Bottom Sheet ── */
+.sheet-overlay{ position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.45); display:flex; align-items:flex-end; }
+.sheet-overlay.hidden{ display:none; }
+.sheet-box{ background:#fff; border-radius:22px 22px 0 0; padding:12px 16px calc(20px + env(safe-area-inset-bottom)); width:100%; }
+.sheet-handle{ width:40px; height:4px; border-radius:2px; background:var(--line); margin:0 auto 16px; }
+.sheet-title{ font-size:14px; font-weight:700; color:var(--soft); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px; }
+.sheet-item{ display:flex; align-items:center; gap:12px; width:100%; padding:14px 6px; border:none; background:none; font-family:inherit; font-size:15px; font-weight:500; color:var(--ink); cursor:pointer; border-bottom:1px solid var(--line); }
+.sheet-item:last-child{ border-bottom:none; }
+.sheet-item i{ font-size:18px; width:24px; text-align:center; color:var(--soft); }
+.sheet-item.danger{ color:#d6453b; }
+.sheet-item.danger i{ color:#d6453b; }
+
+/* ── Link / choice page ── */
+.choice-wrap{ padding:24px 0 8px; }
+.choice-card{
+  background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:20px 18px;
+  margin-bottom:12px; display:flex; align-items:center; gap:16px; cursor:pointer;
+  transition:border-color .15s, box-shadow .15s;
+}
+.choice-card:active{ border-color:var(--blue); box-shadow:0 0 0 3px rgba(59,91,214,.12); }
+.choice-ic{ width:52px; height:52px; border-radius:15px; display:grid; place-items:center; font-size:24px; flex-shrink:0; }
+.choice-ic.parent{ background:var(--green-50); color:var(--green); }
+.choice-ic.teacher{ background:#eef0fb; color:var(--blue); }
+.choice-title{ font-size:15.5px; font-weight:600; }
+.choice-sub{ font-size:13px; color:var(--soft); margin-top:2px; }
+
+/* ── Link form ── */
+.link-back{ display:flex; align-items:center; gap:8px; color:var(--soft); font-size:14px; cursor:pointer; margin-bottom:16px; }
+.link-back i{ font-size:16px; }
+
+/* ── Dashboard Hero ── */
+.dash-hero{
+  background:linear-gradient(150deg,var(--blue),var(--blue-dark)); border-radius:20px;
+  padding:18px 18px 20px; margin-bottom:14px; color:#fff; position:relative; overflow:hidden;
+}
+.dash-hero::before{ content:''; position:absolute; right:-30px; top:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,.06); }
+.dash-hero::after{ content:''; position:absolute; right:20px; bottom:-40px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.06); }
+.hero-top{ display:flex; align-items:center; gap:13px; margin-bottom:14px; }
+.hero-av{ width:54px; height:54px; border-radius:15px; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; flex-shrink:0; color:#fff; border:2px solid rgba(255,255,255,.3); overflow:hidden; }
+.hero-av img{ width:100%; height:100%; object-fit:cover; }
+.hero-name{ font-size:17px; font-weight:700; line-height:1.2; }
+.hero-cls{ font-size:13px; opacity:.8; margin-top:3px; }
+.hero-today{ display:flex; align-items:center; gap:8px; font-size:13px; opacity:.85; margin-top:4px; }
+.hero-today-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.hero-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:rgba(255,255,255,.15); border-radius:14px; overflow:hidden; }
+.hs-item{ background:rgba(255,255,255,.1); padding:10px 6px; text-align:center; }
+.hs-n{ font-size:20px; font-weight:700; }
+.hs-l{ font-size:10.5px; opacity:.8; margin-top:1px; }
+
+/* ── Hero teacher (green gradient) ── */
+.dash-hero.teacher{ background:linear-gradient(150deg,#1a7a52,#145e3e); }
+.role-badge{ display:inline-block; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3); border-radius:999px; padding:3px 10px; font-size:11.5px; margin-top:5px; }
+.hero-stats.t3{ grid-template-columns:repeat(3,1fr); }
+
+/* ── Donut ── */
+.donut-card{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:14px; box-shadow:0 2px 10px rgba(40,50,90,.05); }
+.donut-title{ font-size:14.5px; font-weight:600; margin-bottom:16px; }
+.donut-wrap{ display:flex; align-items:center; gap:20px; }
+.donut-svg-wrap{ position:relative; flex-shrink:0; }
+.donut-center-text{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.donut-pct{ font-size:22px; font-weight:700; color:var(--ink); }
+.donut-lbl{ font-size:11px; color:var(--soft); }
+.legend{ display:flex; flex-direction:column; gap:8px; flex:1; }
+.legend-item{ display:flex; align-items:center; gap:8px; }
+.legend-dot{ width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.legend-name{ font-size:13px; color:var(--ink); flex:1; }
+.legend-val{ font-size:13px; font-weight:600; }
+.legend-pct{ font-size:11px; color:var(--soft); margin-left:2px; }
+
+/* ── 7-day strip ── */
+.week-card{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:14px; box-shadow:0 2px 10px rgba(40,50,90,.05); }
+.week-title{ font-size:14.5px; font-weight:600; margin-bottom:14px; }
+.week-row{ display:flex; gap:4px; }
+.wday{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.wday-name{ font-size:10.5px; color:var(--soft); }
+.wday-box{ width:100%; aspect-ratio:1; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+.wday-date{ font-size:10px; font-weight:600; }
+.wday-today .wday-box{ outline:2.5px solid var(--blue); outline-offset:2px; }
+.wb-present{ background:var(--green-50); color:var(--green); }
+.wb-late{ background:var(--gold-50); color:#9a7b13; }
+.wb-absent{ background:var(--red-50); color:var(--red); }
+.wb-leave{ background:#eef0fb; color:var(--blue); }
+.wb-activity{ background:#f3f0fb; color:#7c5cd6; }
+.wb-none{ background:var(--line); color:var(--soft); }
+
+/* ── Pending alert ── */
+.pending-alert{ background:linear-gradient(135deg,#fffbeb,#fef3c7); border:1px solid #f2e2a0; border-radius:16px; padding:14px; margin-bottom:14px; }
+.pending-alert .head{ display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; color:#92610a; margin-bottom:8px; }
+.pending-row{ font-size:13px; color:#78530a; margin-bottom:4px; }
+
+/* ── Leave card (pretty) ── */
+.lc{ background:#fff; border:1px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; cursor:pointer; display:flex; transition:opacity .1s; box-shadow:0 1px 6px rgba(40,50,90,.04); }
+.lc:active{ opacity:.8; }
+.lc-stripe{ width:5px; flex-shrink:0; }
+.lc-body{ flex:1; padding:12px 13px; min-width:0; }
+.lc-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.lc-info{ display:flex; align-items:flex-start; gap:9px; flex:1; min-width:0; }
+.lc-type-ic{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.lc-label{ font-weight:600; font-size:14.5px; line-height:1.2; }
+.lc-name{ font-size:12.5px; color:var(--soft); margin-top:2px; }
+.lc-meta{ font-size:12.5px; color:var(--soft); margin-top:4px; }
+.lc-sub{ font-size:12px; color:var(--soft); margin-top:4px; display:flex; align-items:center; gap:4px; }
+/* ── Leave Detail ── */
+.detail-back{ display:flex; align-items:center; gap:8px; color:var(--soft); font-size:14px; cursor:pointer; margin-bottom:14px; }
+.detail-card{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:12px; box-shadow:0 2px 8px rgba(40,50,90,.05); }
+.detail-head{ display:flex; align-items:center; gap:11px; padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--line); }
+.detail-type-ic{ width:44px; height:44px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:21px; flex-shrink:0; }
+.detail-title{ font-size:16px; font-weight:700; }
+.detail-sub{ font-size:13px; color:var(--soft); margin-top:2px; }
+.detail-row{ display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; font-size:14px; }
+.detail-row:last-child{ margin-bottom:0; }
+.detail-row-ic{ color:var(--soft); font-size:15px; flex-shrink:0; margin-top:1px; width:18px; text-align:center; }
+.detail-lbl{ font-size:11.5px; color:var(--soft); margin-bottom:2px; font-weight:600; letter-spacing:.2px; }
+/* ── Timeline ── */
+.tl-sec-title{ font-size:14px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+.tl-wrap{ padding:2px 0; }
+.tl-item{ display:flex; gap:12px; padding-bottom:14px; }
+.tl-item:last-child{ padding-bottom:0; }
+.tl-left{ display:flex; flex-direction:column; align-items:center; width:36px; flex-shrink:0; }
+.tl-dot{ width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; border:2px solid; flex-shrink:0; }
+.tl-line{ width:2px; flex:1; min-height:12px; margin-top:4px; border-radius:2px; }
+.tl-body{ flex:1; padding-top:4px; }
+.tl-step{ font-size:11px; font-weight:700; color:var(--soft); letter-spacing:.4px; margin-bottom:2px; }
+.tl-role{ font-size:14px; font-weight:600; }
+.tl-who{ font-size:12.5px; color:var(--soft); margin-top:2px; }
+.tl-when{ font-size:12px; color:var(--soft); margin-top:2px; }
+.tl-comment{ font-size:13px; background:var(--bg,#f5f6fb); border-radius:9px; padding:8px 10px; margin-top:7px; border:1px solid var(--line); }
+.tl-approved .tl-dot{ background:#e8f7ef; color:var(--green); border-color:var(--green); }
+.tl-approved .tl-line{ background:var(--green); }
+.tl-pending  .tl-dot{ background:#fffbeb; color:#9a7b13; border-color:var(--gold); }
+.tl-pending  .tl-line{ background:var(--line); }
+.tl-rejected .tl-dot{ background:var(--red-50); color:var(--red); border-color:var(--red); }
+.tl-rejected .tl-line{ background:var(--red); }
+.tl-waiting  .tl-dot{ background:var(--line); color:var(--soft); border-color:var(--line); }
+.tl-waiting  .tl-line{ background:var(--line); }
+/* ── Leave list (legacy) ── */
+.leave-item{ background:var(--white); border:1px solid var(--line); border-radius:13px; padding:13px 14px; margin-bottom:10px; }
+.leave-item .top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.leave-item .nm{ font-weight:600; font-size:14.5px; }
+.leave-item .meta{ color:var(--soft); font-size:12.5px; margin-top:3px; }
+.leave-item .rs{ font-size:13px; margin-top:6px; color:var(--ink); }
+
+/* ── Sub-tabs (inside a page) ── */
+.sub-tabs{ display:flex; gap:0; background:var(--bg,#f5f6fb); border-radius:12px; padding:3px; margin-bottom:14px; }
+.sub-tab{ flex:1; text-align:center; padding:8px 4px; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--soft); cursor:pointer; transition:background .15s,color .15s; }
+.sub-tab.on{ background:#fff; color:var(--ink); box-shadow:0 1px 4px rgba(40,50,90,.10); }
+/* ── Approval action buttons ── */
+.btn-approve{ width:100%; padding:14px; border:none; border-radius:12px; background:var(--green,#1f9d63); color:#fff; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-reject{ width:100%; padding:14px; border:2px solid var(--red,#d6453b); border-radius:12px; background:#fff; color:var(--red,#d6453b); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+/* ── Tab badge ── */
+#tabbar button{ position:relative; }
+.tab-badge{ position:absolute; top:4px; right:6px; background:var(--red,#d6453b); color:#fff; font-size:10px; font-weight:700; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 4px; line-height:1; }
+/* ── Att rows ── */
+.att-row{ background:var(--white); border:1px solid var(--line); border-radius:12px; padding:11px 13px; margin-bottom:8px; display:flex; align-items:center; gap:11px; }
+.att-row .dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.att-row .dt{ flex:1; font-size:14px; font-weight:500; }
+
+/* ── Stats (att page) ── */
+.stat-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px; }
+.stat-box{ background:var(--white); border:1px solid var(--line); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 10px rgba(40,50,90,.05); }
+.stat-ic{ width:40px; height:40px; border-radius:11px; display:grid; place-items:center; font-size:18px; flex-shrink:0; }
+.stat-ic.present{ background:var(--green-50); color:var(--green); }
+.stat-ic.late{ background:var(--gold-50); color:#9a7b13; }
+.stat-ic.absent{ background:var(--red-50); color:var(--red); }
+.stat-ic.leave{ background:#eef0fb; color:var(--blue); }
+.stat-box .n{ font-size:20px; font-weight:700; line-height:1.1; }
+.stat-box .l{ font-size:12px; color:var(--soft); }
+.rate-card{ background:linear-gradient(150deg,var(--blue),var(--blue-dark)); color:#fff; border-radius:16px; padding:16px 18px; margin-bottom:16px; }
+.rate-card .top{ display:flex; justify-content:space-between; align-items:baseline; }
+.rate-card .pct{ font-size:30px; font-weight:700; }
+.rate-bar{ height:8px; border-radius:5px; background:rgba(255,255,255,.25); margin-top:10px; overflow:hidden; }
+.rate-bar-fill{ height:100%; border-radius:5px; background:var(--gold); }
+
+/* ── Kid pills ── */
+.kid-pills{ display:flex; gap:7px; overflow-x:auto; padding-bottom:10px; scrollbar-width:none; }
+.kid-pills::-webkit-scrollbar{ display:none; }
+.kid-pill{ white-space:nowrap; border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 14px; font-size:13px; color:var(--soft); cursor:pointer; font-weight:500; }
+.kid-pill.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+
+/* ── Teacher leave form ── */
+.ltype-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.ltype-btn{ border:1px solid var(--line); background:#fff; border-radius:11px; padding:11px 10px; font-size:13.5px; cursor:pointer; color:var(--soft); font-weight:500; font-family:inherit; text-align:center; width:100%; }
+.ltype-btn.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+
+/* ── Empty ── */
+.empty-box{ text-align:center; color:var(--soft); padding:40px 20px; }
+.empty-box i{ font-size:42px; color:var(--line); display:block; margin-bottom:10px; }
+.empty-box .t{ font-size:14px; }
+.sec-title{ font-size:14px; font-weight:600; margin:18px 2px 10px; color:var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="app-head">
+  <div style="flex:1;min-width:0">
+    <h1 id="appTitle">ระบบเช็คชื่อนักเรียน</h1>
+    <p id="headSub">กำลังเชื่อมต่อ...</p>
+  </div>
+  <button id="btnSettings" class="head-settings hidden" onclick="showSettings()" title="ตั้งค่า">
+    <i class="fi fi-rr-settings"></i>
+  </button>
+</div>
+
+<div id="settingsSheet" class="sheet-overlay hidden" onclick="if(event.target===this)hideSettings()">
+  <div class="sheet-box">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">ตั้งค่า</div>
+    <button class="sheet-item danger" onclick="confirmUnlink()">
+      <i class="fi fi-rr-unlink"></i> ยกเลิกการเชื่อมต่อ LINE
+    </button>
+    <button class="sheet-item" onclick="hideSettings()">
+      <i class="fi fi-rr-cross-small"></i> ปิด
+    </button>
+  </div>
+</div>
+
+<div class="wrap" id="app">
+  <div class="loading"><div class="spin"></div>กำลังโหลด...</div>
+</div>
+
+<nav class="tabbar hidden" id="tabbar"></nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+/* ============================================================
+   ตั้งค่าเดียวที่ต้องแก้: URL /exec ของ Web App (Apps Script)
+   ============================================================ */
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz-RBZQXhupciK9zOPpYdtbwDtNlKBH38Qzn9abJPvpJqFx2d0M782CdYzOHIM5ii7-ag/exec";
+
+let LIFF_ID = '', PROFILE = null, USER_TYPE = '';
+let P = { children:[], leaves:[], attendance:[] };   // parent state
+let T = { user:null, leaves:[] };                    // teacher state
+let A = { leaves:[] };                               // approval queue state
+let ATT = { data:null, date:'' };                    // attendance state
+let CURRENT_APPROVAL_ID = null;
+let TAB = 'home', attKid = '', pendingPhoto = null;
+
+const LEAVE_TYPES_P = { sick:'ลาป่วย', personal:'ลากิจ', other:'อื่นๆ' };
+const LEAVE_TYPES_T = { sick:'ลาป่วย', personal:'ลากิจ', vacation:'ลาพักผ่อน', official:'ไปราชการ', maternity:'ลาคลอด', other:'อื่นๆ' };
+const LEAVE_META = {
+  sick:      { color:'#d6453b', bg:'#fdecea', icon:'fi-rr-stethoscope' },
+  personal:  { color:'#3b5bd6', bg:'#eef0fb', icon:'fi-rr-briefcase' },
+  vacation:  { color:'#1f9d63', bg:'#e8f7ef', icon:'fi-rr-umbrella' },
+  official:  { color:'#7c5cd6', bg:'#f3f0fb', icon:'fi-rr-diploma' },
+  maternity: { color:'#e05fa4', bg:'#fce7f5', icon:'fi-rr-baby-carriage' },
+  other:     { color:'#8a93a6', bg:'#f5f6fb', icon:'fi-rr-document' }
+};
+let LEAVE_DETAIL_BACK = null;
+const STATUS_TH = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ' };
+const ATT_TH    = { present:'มา', late:'สาย', absent:'ขาด', leave:'ลา', activity:'กิจกรรม' };
+const ATT_COLOR = { present:'#1f9d63', late:'#e8b430', absent:'#d6453b', leave:'#3b5bd6', activity:'#7c5cd6' };
+const ATT_ICON  = { present:'✓', late:'!', absent:'✕', leave:'ล', activity:'★' };
+const ROLE_TH   = { admin:'ผู้ดูแลระบบ', director:'ผู้อำนวยการ', deputy:'รองผู้อำนวยการ', academic:'หัวหน้าวิชาการ', head_dept:'หัวหน้ากลุ่มสาระ', homeroom:'ครูประจำชั้น', teacher:'ครูผู้สอน' };
+
+function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function initials(n){ return (n||'?').trim().charAt(0); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function thaiDate(ymd){
+  if(!ymd) return '';
+  const p=String(ymd).split('-'), m=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return parseInt(p[2],10)+' '+m[parseInt(p[1],10)]+' '+(parseInt(p[0],10)+543);
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function render(html){ document.getElementById('app').innerHTML=html; }
+async function api(action,data){ const r=await fetch(GAS_API_URL,{method:'POST',body:JSON.stringify(Object.assign({action},data||{}))}); return r.json(); }
+
+/* ══════════════════════════════════════════════════
+   BOOT
+   ══════════════════════════════════════════════════ */
+async function boot(){
+  if(!GAS_API_URL){ render('<div class="notice">ยังไม่ได้ตั้งค่า GAS_API_URL</div>'); return; }
+  let cfg;
+  try{ cfg=await api('getLiffConfig'); }catch(e){ render('<div class="notice">เชื่อมต่อระบบไม่สำเร็จ: '+esc(e.message||e)+'</div>'); return; }
+  LIFF_ID=(cfg&&cfg.liff_id)||'';
+  if(!LIFF_ID){ render('<div class="notice"><strong>ยังไม่ได้ตั้งค่า LIFF ID</strong><br><br>ไปที่ ตั้งค่า → เชื่อมต่อ LINE Official Account แล้วกรอก LIFF ID ค่ะ</div>'); return; }
+  try{
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isLoggedIn()){ liff.login(); return; }
+    PROFILE=await liff.getProfile();
+    loadUser();
+  }catch(e){
+    render('<div class="notice">เชื่อมต่อ LIFF ไม่สำเร็จ: '+esc(e.message||e)+'<br><small>เปิดผ่านแอป LINE เท่านั้น</small></div>');
+  }
+}
+
+async function loadUser(){
+  render('<div class="loading"><div class="spin"></div>กำลังโหลดข้อมูล...</div>');
+  // ลอง parent ก่อน
+  const pRes=await api('parentInit',{line_user_id:PROFILE.userId});
+  if(pRes.status==='success'){
+    USER_TYPE='parent';
+    P={children:pRes.children,leaves:pRes.leaves,attendance:pRes.attendance};
+    document.getElementById('headSub').textContent='สวัสดีค่ะ คุณ'+pRes.parent.name;
+    showTabbar('parent');
+    document.getElementById('btnSettings').classList.remove('hidden');
+    renderTab('home'); return;
+  }
+  // ลอง teacher
+  const tRes=await api('teacherLiffInit',{line_user_id:PROFILE.userId});
+  if(tRes.status==='success'){
+    USER_TYPE='teacher';
+    T={user:tRes.user,leaves:tRes.leaves};
+    document.getElementById('headSub').textContent='สวัสดีคุณครู '+tRes.user.name;
+    showTabbar('teacher');
+    document.getElementById('btnSettings').classList.remove('hidden');
+    renderTab('home'); return;
+  }
+  // ยังไม่ได้เชื่อม
+  USER_TYPE=''; renderChoicePage();
+}
+
+/* ══════════════════════════════════════════════════
+   SETTINGS / UNLINK
+   ══════════════════════════════════════════════════ */
+function showSettings(){
+  document.getElementById('settingsSheet').classList.remove('hidden');
+}
+function hideSettings(){
+  document.getElementById('settingsSheet').classList.add('hidden');
+}
+function confirmUnlink(){
+  hideSettings();
+  const msg=USER_TYPE==='teacher'?'ยกเลิกการเชื่อมต่อบัญชีครู?\nจะต้องผูกบัญชีใหม่ในครั้งถัดไป'
+    :'ยกเลิกการเชื่อมต่อบัญชีผู้ปกครอง?\nจะต้องผูกบัญชีใหม่ในครั้งถัดไป';
+  if(!confirm(msg)) return;
+  const action=USER_TYPE==='teacher'?'unlinkLiff':'unlinkParentLiff';
+  api(action,{line_user_id:PROFILE.userId}).then(function(res){
+    if(res.status==='success'){
+      toast('ยกเลิกการเชื่อมต่อแล้ว');
+      USER_TYPE=''; P={children:[],leaves:[],attendance:[]}; T={user:null,leaves:[]}; A={leaves:[]};
+      document.getElementById('tabbar').classList.add('hidden');
+      document.getElementById('btnSettings').classList.add('hidden');
+      renderChoicePage();
+    } else { toast(res.message||'เกิดข้อผิดพลาด'); }
+  }).catch(function(e){ toast(String(e)); });
+}
+
+/* ══════════════════════════════════════════════════
+   TABBAR
+   ══════════════════════════════════════════════════ */
+function showTabbar(type){
+  const tb=document.getElementById('tabbar');
+  if(type==='parent'){
+    tb.innerHTML='<button class="on" data-tab="home"><i class="fi fi-rr-home"></i>หน้าหลัก</button>'
+      +'<button data-tab="att"><i class="fi fi-rr-chart-histogram"></i>การมาเรียน</button>'
+      +'<button data-tab="leaves"><i class="fi fi-rr-document"></i>การลา</button>';
+  } else {
+    const isHomeroom = T.user && T.user.role === 'homeroom';
+    tb.innerHTML='<button class="on" data-tab="home"><i class="fi fi-rr-home"></i>หน้าหลัก</button>'
+      +(isHomeroom?'<button data-tab="tattend"><i class="fi fi-rr-user-check"></i>เช็คชื่อ</button>':'')
+      +'<button data-tab="tapprove" id="tbApprove"><i class="fi fi-rr-check-circle"></i>รออนุมัติ</button>'
+      +'<button data-tab="tleave"><i class="fi fi-rr-add-document"></i>ยื่นใบลา</button>'
+      +'<button data-tab="thistory"><i class="fi fi-rr-time-past"></i>ประวัติ</button>';
+  }
+  tb.classList.remove('hidden');
+  tb.querySelectorAll('button').forEach(function(b){ b.onclick=function(){ renderTab(b.getAttribute('data-tab')); }; });
+}
+function renderTab(tab){
+  TAB=tab;
+  document.querySelectorAll('#tabbar button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-tab')===tab); });
+  window.scrollTo(0,0);
+  if(tab==='home')     USER_TYPE==='parent'?renderParentHome():renderTeacherHome();
+  if(tab==='att')      renderParentAtt();
+  if(tab==='leaves')   renderParentLeaves();
+  if(tab==='tattend')  renderAttendanceTab();
+  if(tab==='tapprove') renderApprovalQueue();
+  if(tab==='tleave')   renderTeacherLeaveForm();
+  if(tab==='thistory') renderTeacherHistory();
+}
+
+/* ══════════════════════════════════════════════════
+   CHOICE / LINK PAGE
+   ══════════════════════════════════════════════════ */
+function renderChoicePage(){
+  document.getElementById('headSub').textContent='เชื่อมต่อบัญชี LINE';
+  render('<div class="choice-wrap"><div style="text-align:center;margin-bottom:20px;color:var(--soft);font-size:14px">ท่านเป็น...</div>'
+    +'<div class="choice-card" onclick="renderParentLinkInfo()">'
+      +'<div class="choice-ic parent"><i class="fi fi-rr-users"></i></div>'
+      +'<div><div class="choice-title">ผู้ปกครอง</div><div class="choice-sub">ติดตามการมาเรียน / ยื่นใบลาให้บุตรหลาน</div></div>'
+    +'</div>'
+    +'<div class="choice-card" onclick="renderTeacherLink()">'
+      +'<div class="choice-ic teacher"><i class="fi fi-rr-graduation-cap"></i></div>'
+      +'<div><div class="choice-title">ครู / บุคลากร</div><div class="choice-sub">ยื่นใบลาของตัวเองผ่าน LINE</div></div>'
+    +'</div>'
+  +'</div>');
+}
+function renderParentLinkInfo(){
+  render('<div class="link-back" onclick="renderChoicePage()"><i class="fi fi-rr-arrow-left"></i>ย้อนกลับ</div>'
+    +'<div class="notice" style="text-align:left"><strong>วิธีเชื่อมบัญชีผู้ปกครอง</strong><br><br>'
+    +'1. เปิดแชทกับ LINE Official Account ของโรงเรียน<br>'
+    +'2. พิมพ์ "รหัสนักเรียน" ของบุตรหลาน เช่น <b>12345</b><br>'
+    +'3. กลับมาเปิดหน้านี้ใหม่อีกครั้ง</div>');
+}
+function renderTeacherLink(){
+  render('<div class="link-back" onclick="renderChoicePage()"><i class="fi fi-rr-arrow-left"></i>ย้อนกลับ</div>'
+    +'<div class="card">'
+    +'<div style="font-size:15px;font-weight:600;margin-bottom:4px">เชื่อมบัญชีครู</div>'
+    +'<div style="font-size:13px;color:var(--soft);margin-bottom:16px">กรอก Username ที่ได้รับจากผู้ดูแลระบบ</div>'
+    +'<div class="field"><label>Username (รหัสผู้ใช้ในระบบ)</label>'
+    +'<input class="ctl" id="tcCode" placeholder="เช่น teacher01" autocomplete="off"></div>'
+    +'<button class="btn btn-primary" id="btnTLink" onclick="doTeacherLink()"><i class="fi fi-rr-link-alt"></i> เชื่อมต่อ</button>'
+    +'</div>');
+}
+async function doTeacherLink(){
+  const code=document.getElementById('tcCode').value.trim();
+  if(!code){ toast('กรุณากรอก Username'); return; }
+  const btn=document.getElementById('btnTLink'); btn.disabled=true; btn.textContent='กำลังเชื่อมต่อ...';
+  const res=await api('linkTeacherLine',{line_user_id:PROFILE.userId,teacher_code:code});
+  if(res.status==='success'){
+    USER_TYPE='teacher';
+    T={user:res.user,leaves:[]};
+    document.getElementById('headSub').textContent='สวัสดีคุณครู '+res.user.name;
+    showTabbar('teacher');
+    document.getElementById('btnSettings').classList.remove('hidden');
+    const fresh=await api('teacherLiffInit',{line_user_id:PROFILE.userId});
+    if(fresh.status==='success') T={user:fresh.user,leaves:fresh.leaves};
+    renderTab('home');
+  } else { toast(res.message); btn.disabled=false; btn.textContent='เชื่อมต่อ'; }
+}
+
+/* ══════════════════════════════════════════════════
+   PARENT — HOME DASHBOARD
+   ══════════════════════════════════════════════════ */
+function renderParentHome(){
+  const today=todayStr(), todayMap={};
+  P.attendance.forEach(function(a){ if(a.date===today) todayMap[a.student_id]=a.status; });
+  const cnt={present:0,late:0,absent:0,leave:0,activity:0};
+  P.attendance.forEach(function(a){ if(cnt[a.status]!=null) cnt[a.status]++; });
+  const total=P.attendance.length, came=cnt.present+cnt.late+cnt.activity, pct=total?Math.round(came/total*100):0;
+  let h='';
+  P.children.forEach(function(c){
+    const st=todayMap[c.id];
+    const todayBg={present:'#bbf7d0',late:'#fde68a',absent:'#fecaca',leave:'#bfdbfe',activity:'#ddd6fe'};
+    h+='<div class="dash-hero"><div class="hero-top">'
+      +(c.photo_file_id?'<div class="hero-av"><img src="https://drive.google.com/thumbnail?id='+c.photo_file_id+'&sz=w400"></div>':'<div class="hero-av">'+initials(c.name)+'</div>')
+      +'<div><div class="hero-name">'+esc(c.name)+'</div><div class="hero-cls">'+esc(c.class_name||'-')+'</div>'
+      +(st?'<div class="hero-today"><span class="hero-today-dot" style="background:'+(todayBg[st]||'#fff')+'"></span>วันนี้: <b>'+ATT_TH[st]+'</b></div>':'<div class="hero-today" style="opacity:.7">วันนี้: ยังไม่มีข้อมูล</div>')
+      +'</div></div>'
+      +(total?'<div class="hero-stats"><div class="hs-item"><div class="hs-n">'+pct+'%</div><div class="hs-l">มาเรียน</div></div><div class="hs-item"><div class="hs-n">'+cnt.present+'</div><div class="hs-l">ปกติ</div></div><div class="hs-item"><div class="hs-n">'+cnt.absent+'</div><div class="hs-l">ขาด</div></div><div class="hs-item"><div class="hs-n">'+cnt.late+'</div><div class="hs-l">สาย</div></div></div>':'')
+      +'</div>';
+  });
+  // donut
+  if(total){ h+='<div class="donut-card"><div class="donut-title">สัดส่วนการมาเรียน <span style="font-size:12px;color:var(--soft);font-weight:400">('+total+' วัน)</span></div><div class="donut-wrap">'+buildDonut(cnt,total)+'<div class="legend">'+legendRow('#1f9d63','มาเรียน',cnt.present,total)+legendRow('#e8b430','มาสาย',cnt.late,total)+legendRow('#d6453b','ขาดเรียน',cnt.absent,total)+legendRow('#3b5bd6','ลา',cnt.leave,total)+(cnt.activity?legendRow('#7c5cd6','กิจกรรม',cnt.activity,total):'')+'</div></div></div>'; }
+  // 7-day
+  h+='<div class="week-card"><div class="week-title">7 วันล่าสุด</div>'+build7DayStrip()+'</div>';
+  // pending
+  const pending=P.leaves.filter(function(l){ return l.status==='pending'; });
+  if(pending.length){ h+='<div class="pending-alert"><div class="head"><i class="fi fi-rr-clock"></i>รออนุมัติ '+pending.length+' รายการ</div>'+pending.slice(0,2).map(function(l){ return '<div class="pending-row">• '+esc(l.student_name)+' — '+(LEAVE_TYPES_P[l.leave_type]||l.leave_type)+' '+thaiDate(l.date_from)+'</div>'; }).join('')+'</div>'; }
+  // action
+  if(P.children.length===1) h+='<button class="btn btn-primary" style="margin-top:4px" onclick="openParentLeaveForm(\''+P.children[0].id+'\')"><i class="fi fi-rr-add-document"></i> ยื่นใบลา</button>';
+  else if(P.children.length>1){ h+='<div class="sec-title">ยื่นใบลาให้</div>'; P.children.forEach(function(c){ h+='<button class="btn btn-ghost" style="margin-bottom:8px" onclick="openParentLeaveForm(\''+c.id+'\')">'+esc(c.name)+'</button>'; }); }
+  render(h);
+}
+
+/* ══════════════════════════════════════════════════
+   PARENT — ATTENDANCE PAGE
+   ══════════════════════════════════════════════════ */
+function renderParentAtt(){
+  let h='';
+  if(P.children.length>1){
+    h+='<div class="kid-pills"><span class="kid-pill'+(attKid===''?' on':'')+'" onclick="setAttKid(\'\')">ทุกคน</span>';
+    P.children.forEach(function(c){ h+='<span class="kid-pill'+(attKid===c.id?' on':'')+'" onclick="setAttKid(\''+c.id+'\')">'+esc(c.name)+'</span>'; });
+    h+='</div>';
+  }
+  const list=attKid?P.attendance.filter(function(a){ return a.student_id===attKid; }):P.attendance;
+  if(!list.length){ h+='<div class="empty-box"><i class="fi fi-rr-calendar-clock"></i><div class="t">ยังไม่มีประวัติการเช็คชื่อ</div></div>'; render(h); return; }
+  const cnt={present:0,late:0,absent:0,leave:0,activity:0};
+  list.forEach(function(a){ if(cnt[a.status]!=null) cnt[a.status]++; });
+  const total=list.length, came=cnt.present+cnt.late+cnt.activity, pct=Math.round(came/total*100);
+  h+='<div class="rate-card"><div class="top"><div><div class="pct">'+pct+'%</div><div style="font-size:13px;opacity:.9">อัตราการมาเรียน</div></div><div style="text-align:right"><div style="font-size:13px;opacity:.85">ทั้งหมด</div><div style="font-size:18px;font-weight:600">'+total+' วัน</div></div></div><div class="rate-bar"><div class="rate-bar-fill" style="width:'+pct+'%"></div></div></div>';
+  h+='<div class="stat-grid"><div class="stat-box"><div class="stat-ic present"><i class="fi fi-rr-check"></i></div><div><div class="n">'+cnt.present+'</div><div class="l">มาเรียน</div></div></div><div class="stat-box"><div class="stat-ic late"><i class="fi fi-rr-clock-five"></i></div><div><div class="n">'+cnt.late+'</div><div class="l">มาสาย</div></div></div><div class="stat-box"><div class="stat-ic absent"><i class="fi fi-rr-cross-small"></i></div><div><div class="n">'+cnt.absent+'</div><div class="l">ขาดเรียน</div></div></div><div class="stat-box"><div class="stat-ic leave"><i class="fi fi-rr-document"></i></div><div><div class="n">'+cnt.leave+'</div><div class="l">ลา</div></div></div></div>';
+  h+='<div class="sec-title">ประวัติล่าสุด</div>';
+  list.forEach(function(a){ h+='<div class="att-row"><span class="dot" style="background:'+(ATT_COLOR[a.status]||'#ccc')+'"></span><div class="dt">'+thaiDate(a.date)+(P.children.length>1&&!attKid?'<div style="font-size:12px;color:var(--soft)">'+esc(a.student_name)+'</div>':'')+'</div><span class="badge b-'+a.status+'">'+(ATT_TH[a.status]||a.status)+'</span></div>'; });
+  render(h);
+}
+function setAttKid(id){ attKid=id; renderParentAtt(); }
+
+/* ══════════════════════════════════════════════════
+   PARENT — LEAVES PAGE
+   ══════════════════════════════════════════════════ */
+function renderParentLeaves(){
+  let h='<div class="sec-title">ประวัติการลา</div>';
+  if(!P.leaves.length) h+='<div class="empty-box"><i class="fi fi-rr-document"></i><div class="t">ยังไม่มีรายการลา</div></div>';
+  else P.leaves.forEach(function(l){ h+=leaveItem(l,LEAVE_TYPES_P); });
+  if(P.children.length===1) h+='<div style="margin-top:16px"><button class="btn btn-primary" onclick="openParentLeaveForm(\''+P.children[0].id+'\')"><i class="fi fi-rr-add-document"></i> ยื่นใบลาใหม่</button></div>';
+  render(h);
+}
+function openParentLeaveForm(childId){
+  const c=P.children.find(function(x){ return x.id===childId; }); pendingPhoto=null;
+  render('<div class="sec-title">ยื่นใบลา — '+esc(c.name)+'</div><div class="card">'
+    +'<div class="field"><label>ประเภทการลา</label><div class="chips" id="ltype">'
+    +chipBtn('sick','ลาป่วย',true,'chip')+chipBtn('personal','ลากิจ',false,'chip')+chipBtn('other','อื่นๆ',false,'chip')+'</div></div>'
+    +'<div class="row2"><div class="field"><label>ตั้งแต่วันที่</label><input type="date" class="ctl" id="dFrom" value="'+todayStr()+'"></div>'
+    +'<div class="field"><label>ถึงวันที่</label><input type="date" class="ctl" id="dTo" value="'+todayStr()+'"></div></div>'
+    +'<div class="field"><label>เหตุผล</label><textarea class="ctl" id="reason" rows="3" placeholder="ระบุเหตุผล"></textarea></div>'
+    +'<div class="field"><label>แนบรูป — ไม่บังคับ</label><input type="file" class="ctl" id="photo" accept="image/*"><img class="photo-prev hidden" id="photoPrev"></div>'
+    +'<button class="btn btn-primary" id="btnSubmit" onclick="submitParentLeave(\''+childId+'\')">ส่งใบลา</button>'
+    +'<button class="btn btn-ghost" style="margin-top:8px" onclick="renderTab(TAB)">ยกเลิก</button></div>');
+  bindPhotoInput('photo','photoPrev');
+  document.querySelectorAll('#ltype .chip').forEach(function(el){ el.onclick=function(){ document.querySelectorAll('#ltype .chip').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; });
+}
+async function submitParentLeave(childId){
+  const typeEl=document.querySelector('#ltype .chip.on');
+  const payload={line_user_id:PROFILE.userId,student_id:childId,leave_type:typeEl?typeEl.getAttribute('data-v'):'sick',date_from:document.getElementById('dFrom').value,date_to:document.getElementById('dTo').value,reason:document.getElementById('reason').value.trim(),photo:pendingPhoto||''};
+  if(!payload.date_from){ toast('กรุณาเลือกวันที่'); return; }
+  const btn=document.getElementById('btnSubmit'); btn.disabled=true; btn.textContent='กำลังส่ง...';
+  const res=await api('submitStudentLeave',payload);
+  if(res.status==='success'){
+    toast('ส่งใบลาเรียบร้อย');
+    if(liff.isInClient()){ try{ await liff.sendMessages([{type:'text',text:'ยื่นใบลาให้บุตรหลานเรียบร้อยแล้ว'}]); }catch(e){} }
+    const fresh=await api('parentInit',{line_user_id:PROFILE.userId});
+    if(fresh.status==='success') P={children:fresh.children,leaves:fresh.leaves,attendance:fresh.attendance};
+    renderTab('leaves');
+  } else { toast(res.message||'ส่งไม่สำเร็จ'); btn.disabled=false; btn.textContent='ส่งใบลา'; }
+}
+
+/* ══════════════════════════════════════════════════
+   TEACHER — HOME DASHBOARD
+   ══════════════════════════════════════════════════ */
+function renderTeacherHome(){
+  const u=T.user;
+  const cnt={pending:0,approved:0,rejected:0};
+  T.leaves.forEach(function(l){ if(cnt[l.status]!=null) cnt[l.status]++; });
+  let h='<div class="dash-hero teacher">'
+    +'<div class="hero-top"><div class="hero-av" style="background:rgba(255,255,255,.15)"><i class="fi fi-rr-graduation-cap" style="font-size:22px"></i></div>'
+    +'<div><div class="hero-name">'+esc(u.name)+'</div>'
+    +'<div class="hero-cls">'+esc(u.username)+'</div>'
+    +'<div><span class="role-badge">'+(ROLE_TH[u.role]||u.role)+'</span></div>'
+    +'</div></div>'
+    +(T.leaves.length?'<div class="hero-stats t3"><div class="hs-item"><div class="hs-n">'+T.leaves.length+'</div><div class="hs-l">ยื่นแล้ว</div></div><div class="hs-item"><div class="hs-n">'+cnt.pending+'</div><div class="hs-l">รออนุมัติ</div></div><div class="hs-item"><div class="hs-n">'+cnt.approved+'</div><div class="hs-l">อนุมัติแล้ว</div></div></div>':'')
+    +'</div>';
+
+  // pending leave alert
+  const pending=T.leaves.filter(function(l){ return l.status==='pending'; });
+  if(pending.length){
+    h+='<div class="pending-alert"><div class="head"><i class="fi fi-rr-clock"></i>รออนุมัติ '+pending.length+' รายการ</div>';
+    pending.slice(0,2).forEach(function(l){ h+='<div class="pending-row">• '+(LEAVE_TYPES_T[l.leave_type]||l.leave_type)+' '+thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' - '+thaiDate(l.date_to):'')+'</div>'; });
+    h+='</div>';
+  }
+
+  // recent leaves
+  if(T.leaves.length){
+    h+='<div class="sec-title">การลาล่าสุด</div>';
+    T.leaves.slice(0,3).forEach(function(l){ h+=teacherLeaveItem(l,'home'); });
+    if(T.leaves.length>3) h+='<div style="text-align:center;margin-top:4px"><button class="btn btn-ghost btn-sm" onclick="renderTab(\'thistory\')">ดูทั้งหมด</button></div>';
+  } else {
+    h+='<div class="empty-box" style="padding:24px"><i class="fi fi-rr-document"></i><div class="t">ยังไม่มีประวัติการลา</div></div>';
+  }
+
+  h+='<button class="btn btn-primary" style="margin-top:8px" onclick="renderTab(\'tleave\')"><i class="fi fi-rr-add-document"></i> ยื่นใบลา</button>';
+  h+='<div id="quotaCard" style="margin-top:12px"></div>';
+  render(h);
+  _loadQuotaCard();
+}
+
+function _loadQuotaCard(){
+  api('getMyQuotaLiff',{line_user_id:PROFILE.userId}).then(function(res){
+    const el=document.getElementById('quotaCard'); if(!el) return;
+    if(res.status!=='success'||!res.enabled||!res.quota||!res.quota.length){ el.remove(); return; }
+    let h='<div style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:4px">'
+      +'<div style="font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px">'
+        +'<i class="fi fi-rr-calendar-lines" style="color:var(--blue)"></i>โควต้าวันลา ปีการศึกษา '+esc(res.year||'')+'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
+    res.quota.forEach(function(q){
+      const pct=q.limit>0?Math.round(q.used/q.limit*100):0;
+      const barColor=pct>=90?'#d6453b':(pct>=70?'#e0a000':'#1f9d63');
+      h+='<div style="text-align:center">'
+        +'<div style="font-size:11px;color:var(--soft);margin-bottom:4px">'+esc(q.label)+'</div>'
+        +'<div style="font-size:16px;font-weight:700;color:'+barColor+'">'+q.remain+'</div>'
+        +'<div style="font-size:10.5px;color:var(--soft)">คงเหลือ/'+q.limit+'</div>'
+        +'<div style="height:4px;background:var(--line);border-radius:2px;margin-top:4px">'
+          +'<div style="height:4px;width:'+Math.min(pct,100)+'%;background:'+barColor+';border-radius:2px;transition:width .4s"></div>'
+        +'</div>'
+      +'</div>';
+    });
+    h+='</div></div>';
+    el.innerHTML=h;
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   TEACHER — LEAVE FORM
+   ══════════════════════════════════════════════════ */
+function renderTeacherLeaveForm(){
+  pendingPhoto=null;
+  const types=Object.keys(LEAVE_TYPES_T);
+  let typeBtns='<div class="ltype-grid">';
+  types.forEach(function(k,i){ typeBtns+='<button class="ltype-btn'+(i===0?' on':'')+'" data-v="'+k+'" onclick="pickLtype(this)">'+LEAVE_TYPES_T[k]+'</button>'; });
+  typeBtns+='</div>';
+  render('<div class="sec-title">ยื่นใบลา</div><div class="card">'
+    +'<div class="field"><label>ประเภทการลา</label>'+typeBtns+'</div>'
+    +'<div class="row2"><div class="field"><label>ตั้งแต่วันที่</label><input type="date" class="ctl" id="tFrom" value="'+todayStr()+'"></div>'
+    +'<div class="field"><label>ถึงวันที่</label><input type="date" class="ctl" id="tTo" value="'+todayStr()+'"></div></div>'
+    +'<div class="field"><label>เหตุผล</label><textarea class="ctl" id="tReason" rows="3" placeholder="ระบุเหตุผลการลา"></textarea></div>'
+    +'<div class="field"><label>แนบเอกสาร — ไม่บังคับ</label><input type="file" class="ctl" id="tPhoto" accept="image/*"><img class="photo-prev hidden" id="tPhotoPrev"></div>'
+    +'<button class="btn btn-primary" id="btnTSubmit" onclick="submitTeacherLeave()"><i class="fi fi-rr-paper-plane"></i> ส่งใบลา</button>'
+    +'</div>');
+  bindPhotoInput('tPhoto','tPhotoPrev');
+}
+function pickLtype(el){ document.querySelectorAll('.ltype-btn').forEach(function(b){ b.classList.remove('on'); }); el.classList.add('on'); }
+async function submitTeacherLeave(){
+  const typeEl=document.querySelector('.ltype-btn.on');
+  const payload={line_user_id:PROFILE.userId,leave_type:typeEl?typeEl.getAttribute('data-v'):'sick',date_from:document.getElementById('tFrom').value,date_to:document.getElementById('tTo').value,reason:document.getElementById('tReason').value.trim(),photo:pendingPhoto||''};
+  if(!payload.date_from){ toast('กรุณาเลือกวันที่'); return; }
+  const btn=document.getElementById('btnTSubmit'); btn.disabled=true; btn.textContent='กำลังส่ง...';
+  const res=await api('submitTeacherLeaveLiff',payload);
+  if(res.status==='success'){
+    toast(res.message);
+    if(liff.isInClient()){ try{ await liff.sendMessages([{type:'text',text:'ยื่นใบลาเรียบร้อยแล้ว รอการอนุมัติ'}]); }catch(e){} }
+    const fresh=await api('teacherLiffInit',{line_user_id:PROFILE.userId});
+    if(fresh.status==='success') T={user:fresh.user,leaves:fresh.leaves};
+    renderTab('thistory');
+  } else { toast(res.message||'ส่งไม่สำเร็จ'); btn.disabled=false; btn.textContent='ส่งใบลา'; }
+}
+
+/* ══════════════════════════════════════════════════
+   TEACHER — HISTORY
+   ══════════════════════════════════════════════════ */
+function renderTeacherHistory(){
+  let h='<div class="sec-title">ประวัติการลาของฉัน</div>';
+  if(!T.leaves.length){ h+='<div class="empty-box"><i class="fi fi-rr-document"></i><div class="t">ยังไม่มีประวัติการลา</div></div>'; }
+  else T.leaves.forEach(function(l){ h+=teacherLeaveItem(l); });
+  render(h);
+}
+function teacherLeaveItem(l,backTab){ return buildLeaveCard(l,LEAVE_TYPES_T,true,backTab||'thistory'); }
+
+/* ══════════════════════════════════════════════════
+   SHARED HELPERS
+   ══════════════════════════════════════════════════ */
+function leaveItem(l,types,backTab){ return buildLeaveCard(l,types||LEAVE_TYPES_P,false,backTab||'leaves'); }
+
+/* ── Pretty leave card ── */
+function buildLeaveCard(l,types,isTeacher,backTab){
+  const st=l.status||'pending';
+  const meta=LEAVE_META[l.leave_type]||LEAVE_META.other;
+  const typeName=types[l.leave_type]||l.leave_type;
+  const mode=isTeacher?'teacher':'parent';
+  let cur=null;
+  if(st==='pending'&&l.approvals) cur=l.approvals.find(function(a){ return a.status==='pending'; });
+  const done=(l.approvals||[]).filter(function(a){ return a.status==='approved'; }).length;
+  const total=(l.approvals||[]).length;
+  return '<div class="lc" onclick="openLeaveDetail(\''+l.id+'\',\''+mode+'\',\''+(backTab||'home')+'\')">'
+    +'<div class="lc-stripe" style="background:'+meta.color+'"></div>'
+    +'<div class="lc-body">'
+      +'<div class="lc-top">'
+        +'<div class="lc-info">'
+          +'<div class="lc-type-ic" style="background:'+meta.bg+'"><i class="fi '+meta.icon+'" style="color:'+meta.color+'"></i></div>'
+          +'<div><div class="lc-label">'+esc(typeName)+'</div>'
+          +(!isTeacher&&l.student_name?'<div class="lc-name">'+esc(l.student_name)+'</div>':'')
+          +'<div class="lc-meta">'+thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' &ndash; '+thaiDate(l.date_to):'')+(l.days?' &nbsp;&#183;&nbsp; '+l.days+' วัน':'')+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<span class="badge b-'+st+'" style="flex-shrink:0">'+(STATUS_TH[st]||st)+'</span>'
+      +'</div>'
+      +(cur?'<div class="lc-sub"><i class="fi fi-rr-clock"></i>รอ'+esc(cur.role_label||cur.role)+(total?' ('+done+'/'+total+'ชั้น)':'')+'</div>':'')
+      +(l.reason?'<div class="lc-meta" style="margin-top:4px;color:var(--ink)">'+esc(l.reason)+'</div>':'')
+    +'</div>'
+  +'</div>';
+}
+
+/* ── Open leave detail ── */
+function openLeaveDetail(leaveId,mode,backTab){
+  const l=mode==='teacher'
+    ?T.leaves.find(function(x){ return x.id===leaveId; })
+    :P.leaves.find(function(x){ return x.id===leaveId; });
+  if(!l) return;
+  LEAVE_DETAIL_BACK=function(){ renderTab(backTab); };
+  renderLeaveDetail(l,mode==='teacher'?LEAVE_TYPES_T:LEAVE_TYPES_P,mode==='teacher');
+}
+
+function renderLeaveDetail(l,types,isTeacher){
+  const st=l.status||'pending';
+  const meta=LEAVE_META[l.leave_type]||LEAVE_META.other;
+  const typeName=types[l.leave_type]||l.leave_type;
+  let h='<div class="detail-back" onclick="LEAVE_DETAIL_BACK&&LEAVE_DETAIL_BACK()">'
+    +'<i class="fi fi-rr-arrow-left"></i>ย้อนกลับ</div>';
+  h+='<div class="detail-card">';
+  h+='<div class="detail-head">'
+    +'<div class="detail-type-ic" style="background:'+meta.bg+'"><i class="fi '+meta.icon+'" style="color:'+meta.color+'"></i></div>'
+    +'<div style="flex:1;min-width:0">'
+      +'<div class="detail-title">'+esc(typeName)+'</div>'
+      +(!isTeacher&&l.student_name?'<div class="detail-sub">'+esc(l.student_name)+'</div>':'')
+      +(isTeacher&&T.user?'<div class="detail-sub">'+(ROLE_TH[T.user.role]||T.user.role)+'</div>':'')
+    +'</div>'
+    +'<span class="badge b-'+st+'">'+(STATUS_TH[st]||st)+'</span>'
+  +'</div>';
+  h+='<div class="detail-row"><div class="detail-row-ic"><i class="fi fi-rr-calendar"></i></div>'
+    +'<div><div class="detail-lbl">วันที่ลา</div>'
+    +thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' &ndash; '+thaiDate(l.date_to):'')
+    +(l.days?' <span style="font-weight:600;color:var(--blue)">('+l.days+' วัน)</span>':'')
+    +'</div></div>';
+  if(l.reason) h+='<div class="detail-row"><div class="detail-row-ic"><i class="fi fi-rr-note"></i></div>'
+    +'<div><div class="detail-lbl">เหตุผล</div>'+esc(l.reason)+'</div></div>';
+  h+='</div>';
+  if(l.approvals&&l.approvals.length){
+    h+='<div class="detail-card">'
+      +'<div class="tl-sec-title"><i class="fi fi-rr-list-check" style="color:var(--blue)"></i>สายการอนุมัติ</div>'
+      +buildTimeline(l.approvals)
+    +'</div>';
+  }
+  render(h); window.scrollTo(0,0);
+}
+
+function buildTimeline(approvals){
+  const TL={
+    approved:{ cls:'tl-approved', icon:'fi-rr-check',       label:'อนุมัติแล้ว' },
+    rejected:{ cls:'tl-rejected', icon:'fi-rr-cross-small', label:'ไม่อนุมัติ'  },
+    pending: { cls:'tl-pending',  icon:'fi-rr-clock',       label:'รออนุมัติ'   },
+    waiting: { cls:'tl-waiting',  icon:'fi-rr-circle',      label:'รอชั้นก่อน'  }
+  };
+  let h='<div class="tl-wrap">';
+  approvals.forEach(function(a,i){
+    const tl=TL[a.status]||TL.waiting;
+    const isLast=i===approvals.length-1;
+    const actedDate=a.acted_at?String(a.acted_at).split('T')[0]:'';
+    h+='<div class="tl-item '+tl.cls+'">'
+      +'<div class="tl-left">'
+        +'<div class="tl-dot"><i class="fi '+tl.icon+'"></i></div>'
+        +(!isLast?'<div class="tl-line"></div>':'')
+      +'</div>'
+      +'<div class="tl-body">'
+        +'<div class="tl-step">ชั้น '+a.level+' &mdash; '+esc(a.role_label||a.role)+'</div>'
+        +'<div class="tl-role">'+esc(a.approver_name||'(ไม่ระบุ)')+'</div>'
+        +'<div class="tl-who"><span class="badge b-'+a.status+'" style="font-size:11px">'+tl.label+'</span></div>'
+        +(actedDate?'<div class="tl-when">'+thaiDate(actedDate)+'</div>':'')
+        +(a.comment?'<div class="tl-comment">&#x1F4AC; '+esc(a.comment)+'</div>':'')
+      +'</div>'
+    +'</div>';
+  });
+  return h+'</div>';
+}
+/* ══════════════════════════════════════════════════
+   APPROVAL QUEUE (ครู)
+   ══════════════════════════════════════════════════ */
+let APPROVE_SUB='queue'; // 'queue' | 'history'
+
+function renderApprovalQueue(sub){
+  if(sub) APPROVE_SUB=sub;
+  const subTabs='<div class="sub-tabs">'
+    +'<div class="sub-tab'+(APPROVE_SUB==='queue'?' on':'')+'" onclick="renderApprovalQueue(\'queue\')">รออนุมัติ</div>'
+    +'<div class="sub-tab'+(APPROVE_SUB==='history'?' on':'')+'" onclick="renderApprovalQueue(\'history\')">ประวัติการอนุมัติ</div>'
+    +'</div>';
+  render(subTabs+'<div class="loading"><div class="spin"></div>กำลังโหลด...</div>');
+  if(APPROVE_SUB==='history'){ _loadApprovalHistory(subTabs); return; }
+  api('getLeavesForApproval',{line_user_id:PROFILE.userId}).then(function(res){
+    if(res.status!=='success'){ render(subTabs+'<div class="notice">'+esc(res.message||'เกิดข้อผิดพลาด')+'</div>'); return; }
+    A.leaves=res.leaves||[];
+    _updateApproveTabBadge(A.leaves.length);
+    let h=subTabs;
+    if(!A.leaves.length){
+      h+='<div class="empty-box"><i class="fi fi-rr-check-circle" style="font-size:36px;color:var(--green)"></i>'
+        +'<div class="t" style="margin-top:10px">ไม่มีใบลารออนุมัติ</div></div>';
+    } else {
+      h+='<div class="sec-title">รออนุมัติจากฉัน <span style="font-weight:400;color:var(--soft)">('+A.leaves.length+' รายการ)</span></div>';
+      A.leaves.forEach(function(l){ h+=buildApprovalCard(l); });
+    }
+    render(h);
+  }).catch(function(e){ render(subTabs+'<div class="notice">'+esc(String(e))+'</div>'); });
+}
+
+function _loadApprovalHistory(subTabs){
+  api('getApprovalHistory',{line_user_id:PROFILE.userId}).then(function(res){
+    if(res.status!=='success'){ render(subTabs+'<div class="notice">'+esc(res.message||'เกิดข้อผิดพลาด')+'</div>'); return; }
+    let h=subTabs;
+    if(!res.history||!res.history.length){
+      h+='<div class="empty-box"><i class="fi fi-rr-time-past" style="font-size:36px;color:var(--soft)"></i>'
+        +'<div class="t" style="margin-top:10px">ยังไม่มีประวัติการอนุมัติ</div></div>';
+    } else {
+      h+='<div class="sec-title">ประวัติการอนุมัติของฉัน <span style="font-weight:400;color:var(--soft)">('+res.history.length+' รายการ)</span></div>';
+      res.history.forEach(function(l){ h+=buildHistoryCard(l); });
+    }
+    render(h);
+  }).catch(function(e){ render(subTabs+'<div class="notice">'+esc(String(e))+'</div>'); });
+}
+
+function buildHistoryCard(l){
+  const meta=LEAVE_META[l.leave_type]||LEAVE_META.other;
+  const isT=l.subject_type==='teacher';
+  const types=isT?LEAVE_TYPES_T:LEAVE_TYPES_P;
+  const name=isT?(l.teacher_name||'-'):(l.student_name||'-');
+  const acted=l.acted_at?thaiDate(String(l.acted_at).split('T')[0]):'';
+  const myAction=l.my_action;
+  const acColor=myAction==='approved'?'var(--green)':'var(--red)';
+  const acIcon=myAction==='approved'?'fi-rr-check':'fi-rr-cross-small';
+  const acLabel=myAction==='approved'?'อนุมัติแล้ว':'ไม่อนุมัติ';
+  return '<div class="lc">'
+    +'<div class="lc-stripe" style="background:'+meta.color+'"></div>'
+    +'<div class="lc-body">'
+      +'<div class="lc-top">'
+        +'<div class="lc-info">'
+          +'<div class="lc-type-ic" style="background:'+meta.bg+'"><i class="fi '+meta.icon+'" style="color:'+meta.color+'"></i></div>'
+          +'<div>'
+            +'<div class="lc-label">'+esc(name)+'</div>'
+            +'<div class="lc-name">'+esc(types[l.leave_type]||l.leave_type)+' &bull; '+thaiDate(l.date_from)+(l.days?' ('+l.days+' วัน)':'')+'</div>'
+            +(acted?'<div class="lc-meta">ดำเนินการ '+acted+'</div>':'')
+          +'</div>'
+        +'</div>'
+        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'
+          +'<span style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:'+acColor+'"><i class="fi '+acIcon+'"></i>'+acLabel+'</span>'
+          +(l.final_status!==l.my_action?'<span class="badge b-'+l.final_status+'" style="font-size:10.5px">'+(STATUS_TH[l.final_status]||l.final_status)+'</span>':'')
+        +'</div>'
+      +'</div>'
+      +(l.my_comment?'<div class="lc-meta" style="margin-top:4px;font-style:italic">&#x1F4AC; '+esc(l.my_comment)+'</div>':'')
+    +'</div>'
+  +'</div>';
+}
+
+function _updateApproveTabBadge(n){
+  const btn=document.getElementById('tbApprove'); if(!btn) return;
+  const existing=btn.querySelector('.tab-badge'); if(existing) existing.remove();
+  if(n>0) btn.insertAdjacentHTML('beforeend','<span class="tab-badge">'+n+'</span>');
+}
+
+function buildApprovalCard(l){
+  const meta=LEAVE_META[l.leave_type]||LEAVE_META.other;
+  const isT=l.subject_type==='teacher';
+  const types=isT?LEAVE_TYPES_T:LEAVE_TYPES_P;
+  const personName=isT?(l.teacher_name||'-'):(l.student_name||'-');
+  return '<div class="lc" onclick="openApprovalDetail(\''+l.id+'\')">'
+    +'<div class="lc-stripe" style="background:'+meta.color+'"></div>'
+    +'<div class="lc-body">'
+      +'<div class="lc-top">'
+        +'<div class="lc-info">'
+          +'<div class="lc-type-ic" style="background:'+meta.bg+'"><i class="fi '+meta.icon+'" style="color:'+meta.color+'"></i></div>'
+          +'<div>'
+            +'<div class="lc-label">'+esc(personName)+'</div>'
+            +'<div class="lc-name" style="font-size:12px;color:var(--soft)">'+(isT?'ครู':'นักเรียน')+(l.class_name?' &bull; '+esc(l.class_name):'')+'</div>'
+            +'<div class="lc-meta">'+esc(types[l.leave_type]||l.leave_type)+' &bull; '+thaiDate(l.date_from)+(l.days?' ('+l.days+' วัน)':'')+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<span class="badge b-pending" style="flex-shrink:0">รออนุมัติ</span>'
+      +'</div>'
+      +(l.reason?'<div class="lc-meta" style="margin-top:4px;color:var(--ink)">'+esc(l.reason)+'</div>':'')
+    +'</div>'
+  +'</div>';
+}
+
+function openApprovalDetail(leaveId){
+  const l=A.leaves.find(function(x){ return x.id===leaveId; }); if(!l) return;
+  CURRENT_APPROVAL_ID=leaveId;
+  LEAVE_DETAIL_BACK=function(){ renderTab('tapprove'); };
+  const types=l.subject_type==='teacher'?LEAVE_TYPES_T:LEAVE_TYPES_P;
+  const isT=l.subject_type==='teacher';
+  let h='<div class="detail-back" onclick="LEAVE_DETAIL_BACK&&LEAVE_DETAIL_BACK()">'
+    +'<i class="fi fi-rr-arrow-left"></i>ย้อนกลับ</div>';
+  const meta=LEAVE_META[l.leave_type]||LEAVE_META.other;
+  const typeName=types[l.leave_type]||l.leave_type;
+  const personName=isT?(l.teacher_name||'-'):(l.student_name||'-');
+  h+='<div class="detail-card">';
+  h+='<div class="detail-head">'
+    +'<div class="detail-type-ic" style="background:'+meta.bg+'"><i class="fi '+meta.icon+'" style="color:'+meta.color+'"></i></div>'
+    +'<div style="flex:1;min-width:0">'
+      +'<div class="detail-title">'+esc(typeName)+'</div>'
+      +'<div class="detail-sub">'+esc(personName)+(l.class_name?' &bull; '+esc(l.class_name):'')+'</div>'
+    +'</div>'
+    +'<span class="badge b-pending">รออนุมัติ</span>'
+  +'</div>';
+  h+='<div class="detail-row"><div class="detail-row-ic"><i class="fi fi-rr-calendar"></i></div>'
+    +'<div><div class="detail-lbl">วันที่ลา</div>'
+    +thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' &ndash; '+thaiDate(l.date_to):'')
+    +(l.days?' <span style="font-weight:600;color:var(--blue)">('+l.days+' วัน)</span>':'')
+    +'</div></div>';
+  if(l.reason) h+='<div class="detail-row"><div class="detail-row-ic"><i class="fi fi-rr-note"></i></div>'
+    +'<div><div class="detail-lbl">เหตุผล</div>'+esc(l.reason)+'</div></div>';
+  h+='</div>';
+  if(l.approvals&&l.approvals.length){
+    h+='<div class="detail-card">'
+      +'<div class="tl-sec-title"><i class="fi fi-rr-list-check" style="color:var(--blue)"></i>สายการอนุมัติ</div>'
+      +buildTimeline(l.approvals)
+    +'</div>';
+  }
+  h+='<div class="detail-card" style="display:flex;gap:10px;flex-direction:column">'
+    +'<button class="btn-approve" onclick="renderApprovalAction(\''+leaveId+'\',\'approve\')">'
+      +'<i class="fi fi-rr-check"></i> อนุมัติ</button>'
+    +'<button class="btn-reject" onclick="renderApprovalAction(\''+leaveId+'\',\'reject\')">'
+      +'<i class="fi fi-rr-cross-small"></i> ไม่อนุมัติ</button>'
+  +'</div>';
+  render(h); window.scrollTo(0,0);
+}
+
+function renderApprovalAction(leaveId,action){
+  const l=A.leaves.find(function(x){ return x.id===leaveId; }); if(!l) return;
+  const isApprove=action==='approve';
+  const types=l.subject_type==='teacher'?LEAVE_TYPES_T:LEAVE_TYPES_P;
+  const meta=LEAVE_META[l.leave_type]||LEAVE_META.other;
+  const personName=l.subject_type==='teacher'?(l.teacher_name||'-'):(l.student_name||'-');
+  const apiAction=isApprove?'approveLeaveLiff':'rejectLeaveLiff';
+  const acColor=isApprove?'#1f9d63':'#d6453b';
+  const acBg=isApprove?'#e8f7ef':'#fdecea';
+  const acIcon=isApprove?'fi-rr-check':'fi-rr-cross-small';
+  const acTitle=isApprove?'อนุมัติใบลา':'ไม่อนุมัติใบลา';
+
+  let h='<div class="detail-back" onclick="openApprovalDetail(\''+leaveId+'\')">'
+    +'<i class="fi fi-rr-arrow-left"></i>ย้อนกลับ</div>';
+
+  /* ── header banner ── */
+  h+='<div style="background:'+acBg+';border-radius:16px;padding:20px;margin-bottom:12px;text-align:center">'
+    +'<div style="width:56px;height:56px;border-radius:50%;background:'+acColor+';display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;color:#fff">'
+      +'<i class="fi '+acIcon+'"></i></div>'
+    +'<div style="font-size:17px;font-weight:800;color:'+acColor+'">'+acTitle+'</div>'
+  +'</div>';
+
+  /* ── leave summary ── */
+  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px">'
+    +'<div style="display:flex;align-items:center;gap:11px">'
+      +'<div style="width:40px;height:40px;border-radius:11px;background:'+meta.bg+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+        +'<i class="fi '+meta.icon+'" style="color:'+meta.color+'"></i></div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-weight:700;font-size:15px">'+esc(personName)+'</div>'
+        +'<div style="font-size:13px;color:var(--soft);margin-top:2px">'+esc(types[l.leave_type]||l.leave_type)
+          +(l.date_from?' &bull; '+thaiDate(l.date_from):'')
+          +(l.days?' ('+l.days+' วัน)':'')
+        +'</div>'
+      +'</div>'
+    +'</div>'
+  +'</div>';
+
+  /* ── comment ── */
+  h+='<div style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:16px">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px">'
+      +(isApprove?'💬 ความคิดเห็น <span style="font-weight:400;color:var(--soft)">(ไม่บังคับ)</span>':'💬 เหตุผลที่ไม่อนุมัติ <span style="font-weight:700;color:#d6453b">*</span>')
+    +'</div>'
+    +'<textarea id="approvalComment" rows="3"'
+      +' style="display:block;width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;resize:none;box-sizing:border-box;outline:none;color:var(--ink)"'
+      +' placeholder="'+(isApprove?'พิมพ์ความคิดเห็น หรือเว้นว่างไว้...':'กรุณาระบุเหตุผล...')+'"></textarea>'
+  +'</div>';
+
+  /* ── buttons ── */
+  h+='<button id="btnConfirm" onclick="confirmApproval(\''+apiAction+'\','+(!isApprove)+')"'
+    +' style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;border:none;border-radius:14px;background:'+acColor+';color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-sizing:border-box;margin-bottom:10px">'
+    +'<i class="fi '+acIcon+'"></i>'+(isApprove?'ยืนยันอนุมัติ':'ยืนยันไม่อนุมัติ')
+  +'</button>';
+  h+='<button onclick="openApprovalDetail(\''+leaveId+'\')"'
+    +' style="display:block;width:100%;padding:13px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:var(--soft);font-size:15px;font-weight:600;cursor:pointer;box-sizing:border-box">ยกเลิก</button>';
+
+  render(h); window.scrollTo(0,0);
+}
+
+function confirmApproval(apiAction,requireComment){
+  const comment=(document.getElementById('approvalComment').value||'').trim();
+  if(requireComment&&!comment){ toast('กรุณาระบุเหตุผล'); return; }
+  const btn=document.getElementById('btnConfirm');
+  btn.disabled=true; btn.textContent='กำลังดำเนินการ...';
+  api(apiAction,{line_user_id:PROFILE.userId,leave_id:CURRENT_APPROVAL_ID,comment:comment}).then(function(res){
+    if(res.status==='success'){
+      toast(res.message||'ดำเนินการแล้ว');
+      Promise.all([
+        api('getLeavesForApproval',{line_user_id:PROFILE.userId}),
+        api('teacherLiffInit',{line_user_id:PROFILE.userId})
+      ]).then(function(results){
+        if(results[0].status==='success'){ A.leaves=results[0].leaves||[]; }
+        if(results[1].status==='success'){ T.user=results[1].user; T.leaves=results[1].leaves||[]; }
+        renderTab('tapprove');
+      });
+    } else {
+      toast(res.message||'เกิดข้อผิดพลาด');
+      btn.disabled=false; btn.textContent='ลองใหม่';
+    }
+  }).catch(function(e){ toast(String(e)); btn.disabled=false; });
+}
+
+/* ══════════════════════════════════════════════════
+   TEACHER — HOMEROOM ATTENDANCE
+   ══════════════════════════════════════════════════ */
+const ATT_STATUS_LIFF = [
+  { v:'present', label:'มา',  color:'#1f9d63', bg:'#e8f7ef' },
+  { v:'absent',  label:'ขาด', color:'#d6453b', bg:'#fdecea' },
+  { v:'late',    label:'สาย', color:'#e0a000', bg:'#fffbeb' },
+  { v:'leave',   label:'ลา',  color:'#7b6fd6', bg:'#f0eeff' }
+];
+
+function todayISO(){
+  const d=new Date();
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+
+function renderAttendanceTab(){
+  const date=ATT.date||todayISO();
+  render('<div class="loading"><div class="spin"></div>กำลังโหลด...</div>');
+  api('getClassForAttendanceLiff',{line_user_id:PROFILE.userId,date:date}).then(function(res){
+    if(res.status==='no_class'){
+      render('<div class="empty-box"><i class="fi fi-rr-school" style="font-size:36px;color:var(--soft)"></i>'
+        +'<div class="t" style="margin-top:10px">ไม่พบห้องเรียนที่รับผิดชอบ</div>'
+        +'<div class="lc-meta" style="margin-top:4px">ต้องตั้งค่าครูประจำชั้นในระบบก่อน</div></div>');
+      return;
+    }
+    if(res.status!=='success'){ render('<div class="notice">'+esc(res.message||'เกิดข้อผิดพลาด')+'</div>'); return; }
+    ATT.data=res; ATT.date=res.date;
+    _renderAttForm(res);
+  }).catch(function(e){ render('<div class="notice">'+esc(String(e))+'</div>'); });
+}
+
+const ATT_ORDER=['present','absent','late','leave'];
+
+function _renderAttForm(res){
+  const thDate=thaiDate(res.date);
+  let h='<div style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'
+      +'<div><div style="font-size:16px;font-weight:700">'+esc(res.class_name)+'</div>'
+        +'<div style="font-size:13px;color:var(--soft);margin-top:2px">'+thDate+' &bull; '+res.records.length+' คน'+(res.already_checked?' <span style="color:var(--green);font-weight:600">&bull; เช็คแล้ว</span>':'')+'</div>'
+      +'</div>'
+      +'<input type="date" id="attDate" value="'+res.date+'"'
+        +' style="border:1.5px solid var(--line);border-radius:9px;padding:6px 8px;font-size:13px;font-family:inherit;color:var(--ink);max-width:130px">'
+    +'</div></div>';
+
+  h+='<div id="attSummaryBar" style="display:flex;gap:6px;margin-bottom:10px"></div>';
+
+  h+='<div style="font-size:12px;color:var(--soft);margin-bottom:8px;display:flex;align-items:center;gap:5px">'
+    +'<i class="fi fi-rr-tap" style="font-size:14px"></i>แตะชื่อเพื่อเปลี่ยนสถานะ</div>';
+
+  h+='<div id="attList">';
+  res.records.forEach(function(st){ h+=_attStudentRow(st); });
+  h+='</div>';
+
+  h+='<button id="btnSaveAtt" onclick="saveAttendanceLiff()"'
+    +' style="width:100%;padding:14px;border:none;border-radius:14px;background:#1f9d63;color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:8px">'
+    +'<i class="fi fi-rr-disk"></i> บันทึกการเช็คชื่อ</button>';
+
+  render(h);
+
+  document.getElementById('attDate').onchange=function(){ ATT.date=this.value; renderAttendanceTab(); };
+
+  document.getElementById('attList').addEventListener('click',function(e){
+    const card=e.target.closest('.att-card'); if(!card) return;
+    const cur=card.getAttribute('data-s');
+    const next=ATT_ORDER[(ATT_ORDER.indexOf(cur)+1)%ATT_ORDER.length];
+    _setCardStatus(card,next);
+    _updateAttSummary();
+  });
+
+  _updateAttSummary();
+}
+
+function _getStatusMeta(sv){
+  return ATT_STATUS_LIFF.find(function(s){ return s.v===sv; })||ATT_STATUS_LIFF[0];
+}
+
+function _setCardStatus(card,sv){
+  const m=_getStatusMeta(sv);
+  card.setAttribute('data-s',sv);
+  card.style.borderColor=m.color;
+  card.style.background=m.bg;
+  const badge=card.querySelector('.att-badge');
+  if(badge){ badge.textContent=m.label; badge.style.background=m.color; badge.style.color='#fff'; }
+}
+
+function _attStudentRow(st){
+  const m=_getStatusMeta(st.status||'present');
+  return '<div class="att-card" data-id="'+st.id+'" data-s="'+m.v+'"'
+    +' style="border:2px solid '+m.color+';border-radius:14px;padding:13px 14px;margin-bottom:8px;background:'+m.bg+';cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s,background .15s;user-select:none">'
+    +(st.number?'<span style="min-width:22px;font-size:12px;font-weight:700;color:'+m.color+';text-align:center">'+esc(st.number)+'</span>':'')
+    +'<span style="flex:1;font-size:15px;font-weight:600;color:var(--ink)">'+esc(st.name)+'</span>'
+    +'<span class="att-badge" style="background:'+m.color+';color:#fff;border-radius:20px;padding:4px 14px;font-size:13px;font-weight:700;flex-shrink:0">'+m.label+'</span>'
+  +'</div>';
+}
+
+function _updateAttSummary(){
+  const counts={present:0,absent:0,late:0,leave:0};
+  document.querySelectorAll('.att-card').forEach(function(card){
+    const s=card.getAttribute('data-s')||'present';
+    if(counts[s]!=null) counts[s]++;
+  });
+  const bar=document.getElementById('attSummaryBar'); if(!bar) return;
+  bar.innerHTML=ATT_STATUS_LIFF.map(function(s){
+    return '<div style="flex:1;text-align:center;background:'+s.bg+';border-radius:10px;padding:8px 4px;border:2px solid '+(counts[s.v]>0?s.color:'transparent')+'">'
+      +'<div style="font-size:18px;font-weight:800;color:'+s.color+'">'+counts[s.v]+'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:'+s.color+'">'+s.label+'</div>'
+    +'</div>';
+  }).join('');
+}
+
+async function saveAttendanceLiff(){
+  const records=[];
+  document.querySelectorAll('.att-card').forEach(function(card){
+    records.push({ id:card.getAttribute('data-id'), status:card.getAttribute('data-s')||'present' });
+  });
+  if(!records.length){ toast('ไม่มีข้อมูลนักเรียน'); return; }
+  const btn=document.getElementById('btnSaveAtt');
+  btn.disabled=true; btn.innerHTML='<i class="fi fi-rr-spinner"></i> กำลังบันทึก...';
+  const res=await api('saveAttendanceLiff',{line_user_id:PROFILE.userId,date:ATT.date,records:records});
+  if(res.status==='success'){
+    toast(res.message||'บันทึกแล้ว');
+    renderAttendanceTab();
+  } else {
+    toast(res.message||'เกิดข้อผิดพลาด');
+    btn.disabled=false; btn.innerHTML='<i class="fi fi-rr-disk"></i> บันทึกการเช็คชื่อ';
+  }
+}
+
+function chipBtn(val,label,on,cls){ return '<div class="'+(cls||'chip')+(on?' on':'')+'" data-v="'+val+'">'+label+'</div>'; }
+function bindPhotoInput(inputId,prevId){
+  document.getElementById(inputId).onchange=function(){
+    const f=this.files[0]; if(!f) return;
+    if(f.size>4*1024*1024){ toast('รูปต้องไม่เกิน 4MB'); this.value=''; return; }
+    const r=new FileReader(); r.onload=function(e){ pendingPhoto=e.target.result; const p=document.getElementById(prevId); p.src=e.target.result; p.classList.remove('hidden'); }; r.readAsDataURL(f);
+  };
+}
+
+/* ══════════════════════════════════════════════════
+   CHART HELPERS
+   ══════════════════════════════════════════════════ */
+function buildDonut(cnt,total){
+  const data=[{key:'present',color:'#1f9d63'},{key:'late',color:'#e8b430'},{key:'absent',color:'#d6453b'},{key:'leave',color:'#3b5bd6'},{key:'activity',color:'#7c5cd6'}].filter(function(d){ return cnt[d.key]>0; });
+  const R=54,r=34,cx=64,cy=64; let paths='',angle=-Math.PI/2;
+  data.forEach(function(d){
+    const sw=(cnt[d.key]/total)*2*Math.PI,x1=cx+R*Math.cos(angle),y1=cy+R*Math.sin(angle); angle+=sw;
+    const x2=cx+R*Math.cos(angle),y2=cy+R*Math.sin(angle),lg=sw>Math.PI?1:0;
+    const ix1=cx+r*Math.cos(angle-sw),iy1=cy+r*Math.sin(angle-sw),ix2=cx+r*Math.cos(angle),iy2=cy+r*Math.sin(angle);
+    if(data.length===1){ paths+='<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="'+d.color+'"/>'; }
+    else{ paths+='<path d="M'+x1+','+y1+' A'+R+','+R+' 0 '+lg+',1 '+x2+','+y2+' L'+ix2+','+iy2+' A'+r+','+r+' 0 '+lg+',0 '+ix1+','+iy1+' Z" fill="'+d.color+'"/>'; }
+  });
+  const pct=Math.round(((cnt.present||0)+(cnt.late||0)+(cnt.activity||0))/total*100);
+  return '<div class="donut-svg-wrap"><svg width="128" height="128" viewBox="0 0 128 128"><circle cx="64" cy="64" r="54" fill="#f0f2f8"/>'+paths+'<circle cx="64" cy="64" r="34" fill="var(--bg)"/></svg><div class="donut-center-text"><div class="donut-pct">'+pct+'%</div><div class="donut-lbl">มาเรียน</div></div></div>';
+}
+function legendRow(color,label,n,total){
+  if(!n) return '';
+  return '<div class="legend-item"><span class="legend-dot" style="background:'+color+'"></span><span class="legend-name">'+label+'</span><span class="legend-val">'+n+'<span class="legend-pct">('+Math.round(n/total*100)+'%)</span></span></div>';
+}
+function build7DayStrip(){
+  const dayNames=['อา','จ','อ','พ','พฤ','ศ','ส'], dateMap={};
+  P.attendance.forEach(function(a){ dateMap[a.date]=a.status; });
+  const today=new Date(); let h='<div class="week-row">';
+  for(let i=6;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const ds=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+    const st=dateMap[ds], cls=st?'wb-'+st:'wb-none';
+    h+='<div class="wday'+(i===0?' wday-today':'')+'"><div class="wday-name">'+dayNames[d.getDay()]+'</div><div class="wday-box '+cls+'">'+(st?ATT_ICON[st]:'')+'</div><div class="wday-date" style="color:'+(st?ATT_COLOR[st]:'var(--soft)')+'">'+d.getDate()+'</div></div>';
+  }
+  h+='</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">';
+  [['#1f9d63','present','มา'],['#9a7b13','late','สาย'],['#d6453b','absent','ขาด'],['#3b5bd6','leave','ลา']].forEach(function(l){
+    h+='<div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--soft)"><span style="width:14px;height:14px;border-radius:4px;background:'+l[0]+'22;color:'+l[0]+';font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">'+ATT_ICON[l[1]]+'</span>'+l[2]+'</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+boot();
+</script>
+</body>
+</html>

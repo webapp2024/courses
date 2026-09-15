@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>คอร์สของบุตรหลาน — โรงเรียนพรศิริกุล</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#1e3358; --brand-2:#2c4a7c; --brand-50:#eef1f6;
+  --ink:#211d16; --soft:#7d7666; --mut:#a89f8b; --line:#ece4d2; --bg:#f7f2e6; --white:#fff;
+  --green:#16a36a; --green-50:#e8f8f0; --gold:#e0a000; --gold-50:#fff6e0; --red:#e54848; --red-50:#fdeded;
+  --blue:#3b6fe0; --blue-50:#eef4ff;
+  --pastel-blue:#e7edfb; --pastel-blue-ic:#3f66b8;
+  --pastel-gold:#fdf1da; --pastel-gold-ic:#c68a1f;
+  --pastel-pink:#fbe6ea; --pastel-pink-ic:#c95d78;
+  --pastel-green:#e3f4ea; --pastel-green-ic:#2f9e6e;
+  --pastel-purple:#efe7fb; --pastel-purple-ic:#7a5cc0;
+  --radius:20px; --radius-lg:26px; --radius-sm:14px;
+  --shadow-sm:0 2px 10px rgba(40,30,10,.06);
+  --shadow-md:0 10px 28px rgba(40,30,10,.09);
+  --shadow-lg:0 22px 50px rgba(40,30,10,.18);
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Prompt','Sarabun',system-ui,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased; }
+.hidden{ display:none !important; }
+.i{ width:1.1em; height:1.1em; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-.16em; flex:none; }
+
+.head{ background:linear-gradient(155deg, #2c4a7c 0%, #1e3358 55%, #101d33 100%); color:#fff;
+  padding:26px 20px 44px; border-radius:0 0 28px 28px; position:relative; overflow:hidden; }
+.head::after{ content:""; position:absolute; width:240px; height:240px; right:-70px; top:-100px;
+  background:radial-gradient(circle, rgba(255,255,255,.18), transparent 70%); border-radius:50%; }
+.head-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; position:relative; z-index:1; }
+.head h1{ font-size:21px; margin:0; font-weight:800; letter-spacing:-.3px; }
+.head p{ margin:5px 0 0; font-size:13.5px; opacity:.85; }
+.head-badge{ flex:none; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28);
+  padding:6px 13px; border-radius:999px; font-size:11.5px; font-weight:600; backdrop-filter:blur(4px); white-space:nowrap; }
+.head-id{ display:flex; align-items:center; gap:12px; }
+.head-av{ width:46px; height:46px; border-radius:14px; background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.4);
+  display:grid; place-items:center; font-weight:800; font-size:18px; flex:none; overflow:hidden; }
+.head-av img{ width:100%; height:100%; object-fit:cover; display:block; }
+.wrap{ padding:16px 16px 110px; max-width:560px; margin:-22px auto 0; position:relative; z-index:2; }
+
+.stats-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.stat-card{ background:#fff; border-radius:16px; padding:14px 12px; box-shadow:var(--shadow-sm); text-align:left; }
+.stat-ic{ width:32px; height:32px; border-radius:10px; display:grid; place-items:center; margin-bottom:9px; }
+.stat-ic .i{ width:15px; height:15px; }
+.stat-ic.blue{ background:var(--pastel-blue); color:var(--pastel-blue-ic); }
+.stat-ic.gold{ background:var(--pastel-gold); color:var(--pastel-gold-ic); }
+.stat-ic.green{ background:var(--pastel-green); color:var(--pastel-green-ic); }
+.stat-ic.pink{ background:var(--pastel-pink); color:var(--pastel-pink-ic); }
+.stat-card .sv{ font-size:19px; font-weight:800; }
+.stat-card .sl{ font-size:10px; color:var(--soft); margin-top:3px; font-weight:600; }
+.stat-card.accent .sv{ color:var(--pastel-green-ic); }
+
+.loading{ text-align:center; padding:64px 20px; color:var(--soft); }
+.spin{ width:34px; height:34px; border:3px solid var(--brand-50); border-top-color:var(--brand); border-radius:50%; animation:sp .8s linear infinite; margin:0 auto 14px; }
+@keyframes sp{ to{ transform:rotate(360deg); } }
+
+.notice{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:34px 22px; text-align:center; color:var(--soft); box-shadow:var(--shadow-md); }
+.notice .ic{ width:58px; height:58px; border-radius:50%; background:var(--brand-50); color:var(--brand); display:grid; place-items:center; margin:0 auto 16px; }
+.notice .ic .i{ width:27px; height:27px; }
+.notice b{ color:var(--ink); display:block; margin-bottom:6px; font-size:16.5px; }
+.notice .btn{ margin-top:18px; }
+
+.kid{ background:#fff; border:1px solid rgba(30,30,70,.05); border-radius:var(--radius-lg); padding:18px; margin-bottom:16px; box-shadow:var(--shadow-md); }
+.kid-top{ display:flex; align-items:center; gap:13px; margin-bottom:6px; }
+.kid-av{ width:50px; height:50px; border-radius:16px; background:linear-gradient(135deg,var(--brand-2),var(--brand)); color:#fff;
+  display:grid; place-items:center; font-weight:800; font-size:20px; flex:none; box-shadow:0 8px 16px rgba(59,91,214,.32); }
+.kid-nm{ font-weight:700; font-size:16.5px; letter-spacing:-.1px; }
+.kid-meta{ font-size:12.5px; color:var(--soft); margin-top:1px; }
+.pay{ font-size:11px; font-weight:700; padding:6px 13px; border-radius:999px; margin-left:auto; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+.pay .i{ width:12px; height:12px; }
+.pay-ok{ background:var(--green-50); color:var(--green); }
+.pay-wait{ background:var(--gold-50); color:var(--gold); }
+.pay-no{ background:var(--red-50); color:var(--red); }
+
+.course{ border:1px solid var(--line); border-radius:var(--radius-sm); padding:15px; margin-top:12px; background:#fdfdfe; }
+.course-h{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.course-nm{ font-weight:700; font-size:15px; letter-spacing:-.1px; }
+.course-meta{ font-size:11.5px; margin-top:8px; display:flex; gap:7px; flex-wrap:wrap; }
+.course-meta span{ display:inline-flex; align-items:center; gap:5px; background:var(--brand-50); color:var(--brand); padding:4px 10px; border-radius:8px; font-weight:600; }
+.course-meta .i{ width:12px; height:12px; }
+.btn-leave{ border:0; background:var(--brand-50); color:var(--brand); border-radius:10px; padding:7px 13px; font-size:12.5px; font-weight:700;
+  cursor:pointer; white-space:nowrap; font-family:inherit; display:inline-flex; align-items:center; gap:6px; transition:transform .12s; }
+.btn-leave:active{ transform:scale(.94); }
+
+.attbar{ height:10px; border-radius:999px; overflow:hidden; display:flex; margin-top:13px; background:var(--line); }
+.attbar i{ display:block; height:100%; }
+.attbar-legend{ display:flex; gap:13px; margin-top:10px; flex-wrap:wrap; }
+.attbar-legend span{ display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--soft); font-weight:600; }
+.attbar-legend i{ width:8px; height:8px; border-radius:50%; display:inline-block; flex:none; }
+.attnote{ margin-top:9px; font-size:11.5px; color:var(--green); font-weight:600; display:flex; align-items:center; gap:5px; }
+.attnote .i{ width:13px; height:13px; }
+.attnote.warn{ color:var(--gold); }
+.attnote.danger{ color:var(--red); }
+
+.group-label{ font-size:12px; font-weight:700; color:var(--soft); margin:16px 0 9px; text-transform:uppercase; letter-spacing:.4px; }
+
+.donut-card{ display:flex; gap:18px; align-items:center; margin:14px 0 4px; flex-wrap:wrap; }
+.donut-wrap{ position:relative; flex:none; }
+.donut-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.donut-center b{ font-size:21px; font-weight:800; line-height:1; }
+.donut-center small{ font-size:10px; color:var(--soft); margin-top:3px; }
+.cat-list{ flex:1; min-width:170px; display:flex; flex-direction:column; gap:11px; }
+.cat-item .ch{ display:flex; justify-content:space-between; font-size:12.5px; font-weight:600; margin-bottom:5px; }
+.cat-item .ch .pct{ font-weight:800; }
+.cat-item .cbar{ height:6px; border-radius:99px; background:var(--line); overflow:hidden; }
+.cat-item .cbar i{ display:block; height:100%; border-radius:99px; }
+.cat-item .csub{ font-size:10.5px; color:var(--mut); margin-top:4px; }
+
+.pick-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; max-height:50vh; overflow-y:auto; }
+.pick-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 15px; border:1.5px solid var(--line);
+  background:#fff; border-radius:13px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; text-align:left; transition:background .12s; }
+.pick-item .i{ width:15px; height:15px; color:var(--mut); flex:none; transform:rotate(-90deg); }
+.pick-item:active{ background:var(--bg); }
+
+.result{ margin-top:12px; background:linear-gradient(135deg,var(--brand-50),#f4f7ff); border:1px solid #e1e8fc; border-radius:var(--radius-sm); padding:13px 15px; }
+.result .rh{ font-size:12px; color:var(--brand); font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+.result .rv{ font-size:13.5px; }
+.result .rv b{ font-size:19px; color:var(--brand); }
+
+.recent{ margin-top:10px; }
+.rec-toggle{ font-size:12.5px; color:var(--soft); cursor:pointer; display:inline-flex; align-items:center; gap:5px; user-select:none; }
+.rec-list{ margin-top:9px; display:flex; flex-direction:column; gap:6px; }
+.rec-item{ display:flex; justify-content:space-between; align-items:center; font-size:12.5px; padding:8px 12px; background:var(--bg); border-radius:10px; }
+.rec-st{ font-weight:700; padding:3px 10px; border-radius:7px; font-size:11px; }
+.rec-st.present{ background:var(--green-50); color:var(--green); } .rec-st.late{ background:var(--gold-50); color:var(--gold); } .rec-st.absent{ background:var(--red-50); color:var(--red); } .rec-st.leave{ background:var(--blue-50); color:var(--blue); }
+.empty-att{ font-size:12.5px; color:var(--mut); margin-top:10px; text-align:center; padding:10px; background:var(--bg); border-radius:10px; }
+
+/* sheet (leave form) */
+.overlay{ position:fixed; inset:0; z-index:90; background:rgba(15,18,40,.55); backdrop-filter:blur(5px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
+.overlay.show{ opacity:1; pointer-events:auto; }
+.sheet{ background:#fff; width:100%; max-width:560px; border-radius:26px 26px 0 0; padding:22px 22px calc(22px + env(safe-area-inset-bottom)); transform:translateY(30px); transition:transform .28s cubic-bezier(.2,.8,.2,1); box-shadow:0 -20px 50px rgba(20,20,60,.18); }
+.overlay.show .sheet{ transform:translateY(0); }
+.sheet h3{ margin:0 0 4px; font-size:18px; font-weight:800; letter-spacing:-.2px; }
+.sheet .sub{ color:var(--soft); font-size:13px; margin:0 0 18px; }
+.field{ margin-bottom:15px; }
+.field label{ display:block; font-size:13px; font-weight:600; margin-bottom:7px; }
+.ctl{ width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:13px; font-size:15px; font-family:inherit; transition:border-color .15s, box-shadow .15s; }
+.ctl:focus{ outline:0; border-color:var(--brand); box-shadow:0 0 0 4px var(--brand-50); }
+.btn{ width:100%; padding:14px; border-radius:14px; font-weight:700; font-size:15px; border:0; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:transform .12s, box-shadow .12s; }
+.btn-primary{ background:linear-gradient(135deg,var(--brand-2),var(--brand)); color:#fff; box-shadow:0 10px 22px rgba(59,91,214,.32); }
+.btn-primary:active{ transform:scale(.98); }
+.btn-primary:disabled{ opacity:.55; box-shadow:none; }
+.btn-ghost{ background:var(--bg); color:var(--soft); margin-top:8px; }
+.btn-ghost:active{ transform:scale(.98); }
+
+.toast{ position:fixed; left:50%; bottom:96px; translate:-50% 0; background:var(--ink); color:#fff; padding:12px 22px; border-radius:999px; font-size:13.5px; z-index:120; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:var(--shadow-lg); }
+.toast.show{ opacity:1; }
+
+/* bottom nav */
+.bottomnav{ position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,.92); backdrop-filter:saturate(160%) blur(14px);
+  border-top:1px solid var(--line); z-index:60; padding:9px 8px env(safe-area-inset-bottom); box-shadow:0 -10px 28px rgba(30,30,70,.06); }
+.bottomnav-in{ max-width:560px; margin:0 auto; display:flex; align-items:flex-end; gap:2px; }
+.nav-btn{ flex:1; background:none; border:0; padding:9px 2px 8px; border-radius:14px; display:flex; flex-direction:column; align-items:center; gap:4px;
+  color:var(--mut); font-family:inherit; cursor:pointer; transition:background .18s, color .18s, transform .12s; }
+.nav-btn .i{ width:21px; height:21px; }
+.nav-btn span{ font-size:10px; font-weight:600; }
+.nav-btn.on{ color:var(--brand); background:var(--brand-50); box-shadow:inset 0 0 0 1px rgba(59,91,214,.1); }
+.nav-btn:active{ transform:scale(.92); }
+
+.nav-fab-wrap{ flex:none; display:flex; flex-direction:column; align-items:center; gap:5px; margin:0 2px; padding-bottom:1px; }
+.nav-fab{ width:58px; height:58px; border-radius:50%; border:4px solid #fff; cursor:pointer; padding:0;
+  background:linear-gradient(140deg,var(--brand-2),var(--brand) 65%,var(--brand-dark,#1f3a8a)); color:#fff; display:grid; place-items:center;
+  margin-top:-34px; box-shadow:0 14px 28px rgba(59,91,214,.4), 0 0 0 6px rgba(59,91,214,.08);
+  transition:transform .15s, box-shadow .15s; animation:fabPulse 2.6s ease-out infinite; }
+.nav-fab .i{ width:25px; height:25px; stroke-width:2.3; }
+.nav-fab:active{ transform:scale(.9); }
+.nav-fab-label{ font-size:10px; font-weight:700; color:var(--brand); }
+@keyframes fabPulse{
+  0%{ box-shadow:0 14px 28px rgba(59,91,214,.4), 0 0 0 6px rgba(59,91,214,.08), 0 0 0 0 rgba(59,91,214,.35); }
+  70%{ box-shadow:0 14px 28px rgba(59,91,214,.4), 0 0 0 6px rgba(59,91,214,.08), 0 0 0 13px rgba(59,91,214,0); }
+  100%{ box-shadow:0 14px 28px rgba(59,91,214,.4), 0 0 0 6px rgba(59,91,214,.08), 0 0 0 0 rgba(59,91,214,0); }
+}
+
+/* settings tab */
+.set-card{ background:#fff; border:1px solid rgba(30,30,70,.05); border-radius:var(--radius-lg); padding:20px; margin-bottom:16px; box-shadow:var(--shadow-md); }
+.set-row{ display:flex; align-items:center; gap:13px; margin-bottom:16px; }
+.set-av{ width:52px; height:52px; border-radius:16px; background:linear-gradient(135deg,var(--brand-2),var(--brand)); color:#fff;
+  display:grid; place-items:center; font-weight:800; font-size:21px; flex:none; box-shadow:0 8px 16px rgba(59,91,214,.32); }
+.set-nm{ font-weight:700; font-size:16.5px; letter-spacing:-.1px; }
+.set-sub{ font-size:12.5px; color:var(--soft); }
+.section-title{ font-size:12.5px; font-weight:700; color:var(--soft); margin:0 0 10px; text-transform:uppercase; letter-spacing:.4px; }
+.btn-danger{ background:var(--red-50); color:var(--red); }
+.btn-danger:active{ transform:scale(.98); }
+
+/* role choice / teacher link */
+.role-intro{ background:#fff; border-radius:var(--radius-lg); box-shadow:var(--shadow-md); text-align:center; padding:26px 22px; margin-bottom:18px; }
+.role-intro-ic{ width:54px; height:54px; border-radius:16px; background:linear-gradient(135deg,var(--brand-2),var(--brand)); color:#fff;
+  display:grid; place-items:center; margin:0 auto 13px; box-shadow:0 8px 16px rgba(59,91,214,.3); }
+.role-intro-ic .i{ width:25px; height:25px; }
+.role-intro h2{ font-size:16.5px; font-weight:800; margin:0 0 4px; letter-spacing:-.2px; }
+.role-intro p{ font-size:12.5px; color:var(--soft); margin:0; }
+.choice-card{ background:#fff; border:1.5px solid var(--line); border-radius:var(--radius-lg); padding:19px 18px; margin-bottom:12px;
+  display:flex; align-items:center; gap:15px; cursor:pointer; box-shadow:var(--shadow-sm); transition:box-shadow .15s, border-color .15s, transform .12s; }
+.choice-card:active{ border-color:var(--brand); box-shadow:0 0 0 4px var(--brand-50); transform:scale(.98); }
+.choice-ic{ width:50px; height:50px; border-radius:15px; display:grid; place-items:center; flex:none; }
+.choice-ic .i{ width:23px; height:23px; }
+.choice-ic.parent{ background:var(--green-50); color:var(--green); }
+.choice-ic.teacher{ background:var(--brand-50); color:var(--brand); }
+.choice-title{ font-weight:700; font-size:15px; }
+.choice-sub{ font-size:12px; color:var(--soft); margin-top:2px; }
+.choice-chev{ flex:none; color:var(--mut); }
+.choice-chev .i{ width:14px; height:14px; transform:rotate(-90deg); }
+.link-back{ display:inline-flex; align-items:center; gap:7px; color:var(--ink); font-size:13px; cursor:pointer; font-weight:600;
+  background:#fff; padding:9px 15px 9px 12px; border-radius:999px; box-shadow:var(--shadow-sm); margin:2px 0 16px; }
+.link-back:active{ background:var(--bg); }
+.link-back .i{ width:15px; height:15px; }
+
+/* teacher: course list */
+.tc-card{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-sm); padding:13px 15px; margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; box-shadow:var(--shadow-sm); }
+.tc-row-l{ display:flex; align-items:center; gap:12px; min-width:0; }
+.tc-ic{ width:42px; height:42px; border-radius:13px; display:grid; place-items:center; flex:none; background:var(--pastel-blue); color:var(--pastel-blue-ic); }
+.tc-ic .i{ width:19px; height:19px; }
+.tc-nm{ font-weight:700; font-size:14.5px; }
+.tc-meta{ font-size:11.5px; color:var(--soft); margin-top:4px; display:flex; gap:7px; flex-wrap:wrap; }
+.tc-meta span{ display:inline-flex; align-items:center; gap:4px; }
+.tc-meta .i{ width:12px; height:12px; }
+.tc-card .i.chev{ width:14px; height:14px; color:var(--mut); flex:none; transform:rotate(-90deg); }
+
+/* teacher: attendance taking */
+.trow{ background:#fff; border:1px solid var(--line); border-radius:13px; padding:12px 13px; margin-bottom:8px; }
+.trow-nm{ font-weight:600; font-size:14px; margin-bottom:9px; }
+.tseg{ display:flex; gap:6px; }
+.tseg button{ flex:1; border:1.5px solid var(--line); background:#fff; border-radius:10px; padding:8px 4px; font-size:12px; font-weight:700; color:var(--soft); cursor:pointer; font-family:inherit; }
+.tseg button.on.present{ background:var(--green-50); border-color:var(--green); color:var(--green); }
+.tseg button.on.late{ background:var(--gold-50); border-color:var(--gold); color:var(--gold); }
+.tseg button.on.absent{ background:var(--red-50); border-color:var(--red); color:var(--red); }
+.tseg button.on.leave{ background:var(--blue-50); border-color:var(--blue); color:var(--blue); }
+.saved-note{ font-size:11.5px; color:var(--soft); margin-bottom:10px; }
+
+/* teacher: ยื่นใบลาของตัวเอง */
+.ltype-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.ltype-btn{ border:1.5px solid var(--line); background:#fff; border-radius:11px; padding:10px 6px; font-size:12.5px; cursor:pointer;
+  color:var(--soft); font-weight:600; font-family:inherit; text-align:center; }
+.ltype-btn.on{ background:var(--brand); border-color:var(--brand); color:#fff; }
+.lv-item{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-sm); padding:13px 15px; margin-bottom:10px; cursor:pointer; }
+.lv-item:active{ background:var(--bg); }
+.lv-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.lv-type{ font-weight:700; font-size:14px; }
+.lv-badge{ font-size:11px; font-weight:700; padding:4px 11px; border-radius:999px; white-space:nowrap; flex:none; }
+.lv-badge.pending{ background:var(--gold-50); color:var(--gold); }
+.lv-badge.approved{ background:var(--green-50); color:var(--green); }
+.lv-badge.rejected{ background:var(--red-50); color:var(--red); }
+.lv-badge.waiting{ background:var(--line); color:var(--mut); }
+.lv-meta{ font-size:12px; color:var(--soft); margin-top:5px; }
+.lv-reason{ font-size:12.5px; margin-top:6px; color:var(--ink); }
+
+/* teacher: รายละเอียดใบลา + สายการอนุมัติ */
+.detail-card{ background:#fff; border:1px solid rgba(30,30,70,.05); border-radius:var(--radius-lg); padding:18px; margin-bottom:14px; box-shadow:var(--shadow-md); }
+.detail-row{ margin-bottom:12px; }
+.detail-row:last-child{ margin-bottom:0; }
+.detail-row label{ display:block; font-size:11.5px; font-weight:700; color:var(--soft); margin-bottom:4px; text-transform:uppercase; letter-spacing:.3px; }
+.detail-row .v{ font-size:14px; }
+.tl-wrap{ padding:2px 0; }
+.tl-item{ display:flex; gap:12px; padding-bottom:16px; }
+.tl-item:last-child{ padding-bottom:0; }
+.tl-left{ display:flex; flex-direction:column; align-items:center; width:30px; flex-shrink:0; }
+.tl-dot{ width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid; flex-shrink:0; }
+.tl-dot .i{ width:13px; height:13px; }
+.tl-line{ width:2px; flex:1; min-height:14px; margin-top:4px; border-radius:2px; background:var(--line); }
+.tl-body{ flex:1; padding-top:2px; }
+.tl-step{ font-size:11px; font-weight:700; color:var(--soft); letter-spacing:.3px; margin-bottom:2px; }
+.tl-role{ font-size:14px; font-weight:600; }
+.tl-when{ font-size:12px; color:var(--soft); margin-top:4px; }
+.tl-comment{ font-size:12.5px; background:var(--bg); border-radius:9px; padding:8px 10px; margin-top:7px; border:1px solid var(--line); }
+.tl-approved .tl-dot{ background:var(--green-50); color:var(--green); border-color:var(--green); }
+.tl-approved .tl-line{ background:var(--green); }
+.tl-pending .tl-dot{ background:var(--gold-50); color:var(--gold); border-color:var(--gold); }
+.tl-rejected .tl-dot{ background:var(--red-50); color:var(--red); border-color:var(--red); }
+.tl-rejected .tl-line{ background:var(--red); }
+.tl-waiting .tl-dot{ background:var(--line); color:var(--mut); border-color:var(--line); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="ic-award" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.2 13.9 7 22l5-3 5 3-1.2-8.1"/></symbol>
+  <symbol id="ic-cal-x" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 14l6 6M15 14l-6 6"/></symbol>
+  <symbol id="ic-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="ic-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></symbol>
+  <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M19 19v2H6.5A2.5 2.5 0 0 1 4 18.5"/></symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 4.29l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="ic-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="ic-grad" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 3 3 6 3s6-2 6-3v-5"/></symbol>
+  <symbol id="ic-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="ic-user-check" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 11 2 2 4-4"/></symbol>
+</svg>
+
+<div class="head">
+  <div class="head-row">
+    <div class="head-id">
+      <div class="head-av" id="headAv">?</div>
+      <div><h1 id="pageTitle">คอร์สของบุตรหลาน</h1>
+      <p id="headSub">การมาเรียน · ผลการเรียน · แจ้งลา</p></div>
+    </div>
+    <span class="head-badge hidden" id="headBadge">ปีการศึกษา 2569</span>
+  </div>
+</div>
+
+<div class="wrap" id="app">
+  <div class="loading"><div class="spin"></div>กำลังเชื่อมต่อ...</div>
+</div>
+
+<div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<nav class="bottomnav hidden" id="bottomnav"></nav>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="config.js"></script>
+<script>
+let PROFILE = null, STATE = [];
+let ROLE = '', TEACHER = null, TEACHER_COURSES = [];
+let TCUR = { courseId:'', date:'', records:[] };
+let TEACHER_LEAVES = [], tLeavePendingPhoto = null;
+const ST_TH = { present:'มา', late:'สาย', absent:'ขาด', leave:'ลา' };
+const LEAVE_TYPES_T = { sick:'ลาป่วย', personal:'ลากิจ', vacation:'ลาพักผ่อน', official:'ไปราชการ', maternity:'ลาคลอด', other:'อื่นๆ' };
+const LEAVE_STATUS_TH = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ', waiting:'รอชั้นก่อน' };
+
+function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function initials(n){ return (n||'?').trim().charAt(0); }
+function svg(id){ return '<svg class="i"><use href="#'+id+'"></use></svg>'; }
+function today(){ const d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function thaiDate(ymd){ if(!ymd) return ''; const p=String(ymd).split('-'); const m=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; return parseInt(p[2],10)+' '+m[parseInt(p[1],10)]+' '+(parseInt(p[0],10)+543); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+function render(h){ document.getElementById('app').innerHTML = h; }
+async function api(action, data){
+  const r = await fetch(GAS_API_URL, { method:'POST', body: JSON.stringify(Object.assign({action}, data||{})) });
+  return r.json();
+}
+
+async function boot(){
+  if(typeof GAS_API_URL==='undefined' || !GAS_API_URL || typeof LIFF_ID==='undefined' || !LIFF_ID){
+    render('<div class="notice"><div class="ic">'+svg('ic-inbox')+'</div><b>ยังไม่ได้ตั้งค่า</b>กรุณาตั้ง GAS_API_URL และ LIFF_ID ใน config.js</div>'); return;
+  }
+  try{
+    await liff.init({ liffId: LIFF_ID });
+    if(!liff.isLoggedIn()){ liff.login(); return; }
+    PROFILE = await liff.getProfile();
+    load();
+  }catch(e){ render('<div class="notice">เชื่อมต่อ LIFF ไม่สำเร็จ: '+esc(e.message||e)+'</div>'); }
+}
+
+async function load(){
+  const res = await api('parentCourseInit', { line_user_id: PROFILE.userId });
+  if(res.status==='success'){
+    ROLE = 'parent'; STATE = res.data;
+    document.getElementById('pageTitle').textContent = 'คอร์สของบุตรหลาน';
+    document.getElementById('headSub').textContent = 'สวัสดีค่ะ คุณ'+(PROFILE.displayName||'');
+    document.getElementById('headBadge').classList.remove('hidden');
+    setHeadAvatar();
+    renderActiveTab();
+    renderNav();
+    return;
+  }
+  const tRes = await api('courseTeacherLiffInit', { line_user_id: PROFILE.userId });
+  if(tRes.status==='success'){
+    ROLE = 'teacher'; TEACHER = tRes.user; TEACHER_COURSES = tRes.courses||[];
+    document.getElementById('pageTitle').textContent = 'เช็คชื่อคอร์สเรียน';
+    document.getElementById('headSub').textContent = 'สวัสดีคุณครู '+(TEACHER.name||'');
+    document.getElementById('headBadge').classList.remove('hidden');
+    setHeadAvatar();
+    TAB = 'thome';
+    renderActiveTab();
+    renderNav();
+    return;
+  }
+  renderChoicePage();
+}
+
+/* ---------- หน้าเลือกบทบาท (ครั้งแรกที่ยังไม่เชื่อมบัญชี) ---------- */
+function renderChoicePage(){
+  document.getElementById('pageTitle').textContent = 'ระบบคอร์สเรียน';
+  document.getElementById('headSub').textContent = 'เชื่อมต่อบัญชี LINE';
+  document.getElementById('headBadge').classList.add('hidden');
+  document.getElementById('headAv').classList.add('hidden');
+  render('<div class="role-intro">'
+      + '<div class="role-intro-ic">'+svg('ic-user-check')+'</div>'
+      + '<h2>เลือกบทบาทของคุณ</h2>'
+      + '<p>เพื่อแสดงเมนูที่เหมาะกับท่าน</p>'
+    + '</div>'
+    + '<div class="choice-card" onclick="renderParentChoice()">'
+      + '<div class="choice-ic parent">'+svg('ic-users')+'</div>'
+      + '<div style="flex:1"><div class="choice-title">ผู้ปกครอง</div><div class="choice-sub">ติดตามการมาเรียน / ผลการเรียน / แจ้งลา</div></div>'
+      + '<span class="choice-chev">'+svg('ic-chev')+'</span>'
+    + '</div>'
+    + '<div class="choice-card" onclick="renderTeacherLinkForm()">'
+      + '<div class="choice-ic teacher">'+svg('ic-grad')+'</div>'
+      + '<div style="flex:1"><div class="choice-title">ครู / บุคลากร</div><div class="choice-sub">เช็คชื่อนักเรียนในคอร์สที่สอน</div></div>'
+      + '<span class="choice-chev">'+svg('ic-chev')+'</span>'
+    + '</div>');
+}
+function renderParentChoice(){
+  render('<div class="link-back" onclick="renderChoicePage()">'+svg('ic-arrow-left')+'ย้อนกลับ</div>'
+    + '<div class="notice"><div class="ic">'+svg('ic-inbox')+'</div><b>ยังไม่พบใบสมัครคอร์ส</b>'
+    + 'เมื่อสมัครคอร์สผ่านบัญชี LINE นี้ ข้อมูลการมาเรียนและผลการเรียนจะแสดงที่นี่'
+    + '<a class="btn btn-primary" style="text-decoration:none;margin-top:16px" href="enroll.html">สมัครคอร์สเรียน</a>'
+    + '<button class="btn btn-ghost" onclick="renderParentLinkForm()">เคยสมัครไว้แล้ว? เชื่อมบัญชี</button>'
+    + '</div>');
+}
+function renderParentLinkForm(){
+  render('<div class="link-back" onclick="renderParentChoice()">'+svg('ic-arrow-left')+'ย้อนกลับ</div>'
+    + '<div class="kid">'
+    + '<div style="font-weight:700;font-size:15px;margin-bottom:4px">เชื่อมบัญชีผู้ปกครอง</div>'
+    + '<div style="font-size:12.5px;color:var(--soft);margin-bottom:16px">กรอกเบอร์โทรที่ใช้ตอนสมัครคอร์ส ระบบจะเชื่อมทุกใบสมัครที่ใช้เบอร์นี้ให้อัตโนมัติ</div>'
+    + '<div class="field"><label>เบอร์โทร</label><input class="ctl" id="pcPhone" type="tel" placeholder="08XXXXXXXX" autocomplete="off"></div>'
+    + '<button class="btn btn-primary" id="btnPLink">'+svg('ic-user-check')+' เชื่อมต่อ</button>'
+    + '</div>');
+  document.getElementById('btnPLink').onclick = doParentLink;
+}
+async function doParentLink(){
+  const phone = document.getElementById('pcPhone').value.trim();
+  if(!phone){ toast('กรุณากรอกเบอร์โทร'); return; }
+  const btn = document.getElementById('btnPLink'); btn.disabled = true; btn.textContent = 'กำลังเชื่อมต่อ...';
+  try{
+    const res = await api('linkParentEnrollmentLiff', { line_user_id: PROFILE.userId, phone: phone });
+    if(res.status==='success'){ toast('เชื่อมต่อสำเร็จ'); load(); }
+    else { toast(res.message||'ไม่สำเร็จ'); btn.disabled=false; btn.innerHTML=svg('ic-user-check')+' เชื่อมต่อ'; }
+  }catch(e){ toast('เกิดข้อผิดพลาด'); btn.disabled=false; btn.innerHTML=svg('ic-user-check')+' เชื่อมต่อ'; }
+}
+function renderTeacherLinkForm(){
+  render('<div class="link-back" onclick="renderChoicePage()">'+svg('ic-arrow-left')+'ย้อนกลับ</div>'
+    + '<div class="kid">'
+    + '<div style="font-weight:700;font-size:15px;margin-bottom:4px">เชื่อมบัญชีครู</div>'
+    + '<div style="font-size:12.5px;color:var(--soft);margin-bottom:16px">กรอก Username ที่ได้รับจากผู้ดูแลระบบ (บัญชีเดียวกับที่ใช้ล็อกอินหลังบ้าน)</div>'
+    + '<div class="field"><label>Username</label><input class="ctl" id="tcUser" placeholder="เช่น teacher01" autocomplete="off"></div>'
+    + '<button class="btn btn-primary" id="btnTLink">'+svg('ic-user-check')+' เชื่อมต่อ</button>'
+    + '</div>');
+  document.getElementById('btnTLink').onclick = doTeacherLink;
+}
+async function doTeacherLink(){
+  const code = document.getElementById('tcUser').value.trim();
+  if(!code){ toast('กรุณากรอก Username'); return; }
+  const btn = document.getElementById('btnTLink'); btn.disabled = true; btn.textContent = 'กำลังเชื่อมต่อ...';
+  try{
+    const res = await api('linkTeacherLine', { line_user_id: PROFILE.userId, teacher_code: code });
+    if(res.status==='success'){ toast('เชื่อมต่อสำเร็จ'); load(); }
+    else { toast(res.message||'ไม่สำเร็จ'); btn.disabled=false; btn.innerHTML=svg('ic-user-check')+' เชื่อมต่อ'; }
+  }catch(e){ toast('เกิดข้อผิดพลาด'); btn.disabled=false; btn.innerHTML=svg('ic-user-check')+' เชื่อมต่อ'; }
+}
+
+function setHeadAvatar(){
+  const el = document.getElementById('headAv');
+  if(!el) return;
+  el.classList.remove('hidden');
+  if(PROFILE && PROFILE.pictureUrl){ el.innerHTML = '<img src="'+PROFILE.pictureUrl+'" alt="">'; }
+  else { el.textContent = initials(PROFILE ? PROFILE.displayName : '?'); }
+}
+
+function emptyState(text){
+  return '<div class="notice"><div class="ic">'+svg('ic-inbox')+'</div>'+esc(text)+'</div>';
+}
+
+/* ---------- bottom nav ---------- */
+const NAV_ITEMS = [
+  { id:'home', label:'หน้าหลัก', icon:'ic-home' },
+  { id:'attendance', label:'การมาเรียน', icon:'ic-calendar' },
+  { id:'__fab__' },
+  { id:'results', label:'ผลการเรียน', icon:'ic-award' },
+  { id:'settings', label:'ตั้งค่า', icon:'ic-settings' }
+];
+const APPROVER_ROLES = ['admin','director','deputy','academic','head_dept','homeroom'];
+function getTeacherNavItems(){
+  const items = [{ id:'thome', label:'เช็คชื่อ', icon:'ic-user-check' }];
+  if(TEACHER && APPROVER_ROLES.indexOf(TEACHER.role)!==-1){
+    items.push({ id:'tapprove', label:'อนุมัติ', icon:'ic-check' });
+  }
+  items.push({ id:'tleave', label:'ยื่นใบลา', icon:'ic-cal-x' });
+  items.push({ id:'thistory', label:'ใบลาของฉัน', icon:'ic-inbox' });
+  items.push({ id:'tsettings', label:'ตั้งค่า', icon:'ic-settings' });
+  return items;
+}
+let TAB = 'home';
+function renderNav(){
+  const items = ROLE==='teacher' ? getTeacherNavItems() : NAV_ITEMS;
+  let h = '<div class="bottomnav-in">';
+  items.forEach(function(n){
+    if(n.id==='__fab__'){
+      h += '<div class="nav-fab-wrap"><button class="nav-fab" onclick="quickLeave()" title="แจ้งลา">'+svg('ic-cal-x')+'</button>'
+        + '<span class="nav-fab-label">แจ้งลา</span></div>';
+    } else {
+      h += '<button class="nav-btn'+(TAB===n.id?' on':'')+'" onclick="setTab(\''+n.id+'\')">'+svg(n.icon)+'<span>'+n.label+'</span></button>';
+    }
+  });
+  h += '</div>';
+  document.getElementById('bottomnav').innerHTML = h;
+  document.getElementById('bottomnav').classList.remove('hidden');
+}
+function setTab(t){ TAB = t; renderActiveTab(); renderNav(); window.scrollTo(0,0); }
+function renderActiveTab(){
+  if(ROLE==='teacher'){
+    if(TAB==='tsettings') renderTeacherSettingsTab();
+    else if(TAB==='tleave') renderTeacherLeaveFormTab();
+    else if(TAB==='thistory') renderTeacherLeaveHistoryTab();
+    else if(TAB==='tapprove') renderTeacherApproveTab();
+    else renderTeacherHome();
+    return;
+  }
+  if(TAB==='attendance') renderAttendanceTab();
+  else if(TAB==='results') renderResultsTab();
+  else if(TAB==='settings') renderSettingsTab();
+  else renderHome();
+}
+
+const PAY = { approved:['pay-ok','อนุมัติแล้ว','ic-check'], pending_review:['pay-wait','รอตรวจสอบ','ic-clock'], rejected:['pay-no','ไม่อนุมัติ','ic-x'] };
+const STATUS_COLOR = { present:'#16a36a', late:'#e0a000', absent:'#e54848', leave:'#3b6fe0' };
+
+/* ---------- การ์ดสรุปด้านบน (รวมทุกบุตรหลาน) ---------- */
+function statsRow(){
+  let totalCourses=0, pendingKids=0, sumPresent=0, sumLate=0, sumTotal=0;
+  STATE.forEach(function(kid){
+    totalCourses += kid.courses.length;
+    if(kid.payment_status==='pending_review') pendingKids++;
+    kid.courses.forEach(function(c){
+      const s=c.summary||{};
+      sumPresent += (s.present||0); sumLate += (s.late||0); sumTotal += (s.total||0);
+    });
+  });
+  const rate = sumTotal ? Math.round((sumPresent+sumLate)/sumTotal*100) : null;
+  return '<div class="stats-row">'
+    + '<div class="stat-card"><div class="stat-ic blue">'+svg('ic-book')+'</div><div class="sv">'+totalCourses+'</div><div class="sl">คอร์สทั้งหมด</div></div>'
+    + '<div class="stat-card accent"><div class="stat-ic green">'+svg('ic-award')+'</div><div class="sv">'+(rate!=null?rate+'%':'-')+'</div><div class="sl">อัตรามาเรียน</div></div>'
+    + '<div class="stat-card"><div class="stat-ic gold">'+svg('ic-clock')+'</div><div class="sv">'+pendingKids+'</div><div class="sl">รอตรวจสอบ</div></div>'
+    + '</div>';
+}
+
+/* ---------- แถบสรุปการมาเรียนแบบ segmented bar ---------- */
+function attBarHtml(s){
+  const total = s.total||0;
+  if(!total) return '<div class="empty-att">ยังไม่มีบันทึกการมาเรียน</div>';
+  const pct = function(n){ return total ? (n/total*100) : 0; };
+  let bar = '<div class="attbar">';
+  ['present','late','absent','leave'].forEach(function(k){
+    if(s[k]) bar += '<i style="width:'+pct(s[k])+'%;background:'+STATUS_COLOR[k]+'"></i>';
+  });
+  bar += '</div>';
+  const legend = '<div class="attbar-legend">'
+    + ['present','late','absent','leave'].map(function(k){
+        return '<span><i style="background:'+STATUS_COLOR[k]+'"></i>'+ST_TH[k]+' '+(s[k]||0)+'</span>';
+      }).join('')
+    + '</div>';
+  const rate = Math.round(pct((s.present||0)+(s.late||0)));
+  let note, cls;
+  if(rate>=90){ note='เข้าเรียนสม่ำเสมอ'; cls=''; }
+  else if(rate>=75){ note='ควรติดตามเล็กน้อย'; cls='warn'; }
+  else { note='ควรติดตามใกล้ชิด'; cls='danger'; }
+  return bar + legend + '<div class="attnote '+cls+'">'+svg('ic-check')+note+' ('+rate+'%)</div>';
+}
+
+function renderHome(){
+  let h = STATE.length ? statsRow() : '';
+  STATE.forEach(function(kid){
+    const pay = PAY[kid.payment_status] || PAY.pending_review;
+    h += '<div class="kid"><div class="kid-top">'
+      + '<span class="kid-av">'+initials(kid.student_name)+'</span>'
+      + '<div><div class="kid-nm">'+esc(kid.student_name)+'</div>'
+      + '<div class="kid-meta">'+esc(kid.level||'-')+' · '+esc(kid.room||'-')+' · เลขที่ '+esc(kid.ref||'-')+'</div></div>'
+      + '<span class="pay '+pay[0]+'">'+svg(pay[2])+pay[1]+'</span></div>';
+
+    if(!kid.courses.length){ h += '<div class="empty-att">ยังไม่มีคอร์ส</div>'; }
+    kid.courses.forEach(function(c){
+      const s = c.summary || {};
+      const tm = (c.time_start||'') + (c.time_end?('–'+c.time_end):'');
+      h += '<div class="course"><div class="course-h"><div>'
+        + '<div class="course-nm">'+esc(c.name)+'</div>'
+        + '<div class="course-meta">'
+          + (c.days?'<span>'+svg('ic-calendar')+esc(c.days)+'</span>':'')
+          + (tm?'<span>'+svg('ic-clock')+esc(tm)+' น.</span>':'')
+        + '</div></div>'
+        + '<button class="btn-leave" onclick="openLeave(\''+kid.enrollment_id+'\',\''+c.course_id+'\',\''+esc(c.name)+'\')">'+svg('ic-cal-x')+'แจ้งลา</button>'
+        + '</div>'
+        + attBarHtml(s)
+        + '</div>';
+    });
+    h += '</div>';
+  });
+  if(!h){ h = emptyState('ยังไม่มีคอร์สที่ติดตามได้'); }
+  render(h);
+}
+
+/* ---------- โดนัทชาร์ตการมาเรียน ---------- */
+function donutChart(s, size, sw){
+  size = size || 110; sw = sw || 14;
+  const r=(size-sw)/2, c=size/2, circ=2*Math.PI*r;
+  const total = s.total||0;
+  let off=0, circles='';
+  ['present','late','absent','leave'].forEach(function(k){
+    const v = s[k]||0; if(!v || !total) return;
+    const frac=v/total, dash=frac*circ, gap=circ-dash;
+    circles += '<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+STATUS_COLOR[k]+'" stroke-width="'+sw+'" '
+      + 'stroke-dasharray="'+dash.toFixed(2)+' '+gap.toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" '
+      + 'stroke-linecap="round" transform="rotate(-90 '+c+' '+c+')"></circle>';
+    off += dash;
+  });
+  return '<svg viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'">'
+    + '<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="#eef0f7" stroke-width="'+sw+'"></circle>'
+    + circles + '</svg>';
+}
+function catList(s){
+  const total = s.total||0;
+  let h='';
+  ['present','late','absent','leave'].forEach(function(k){
+    const v = s[k]||0;
+    const pct = total ? Math.round(v/total*100) : 0;
+    h += '<div class="cat-item"><div class="ch"><span>'+ST_TH[k]+'</span><span class="pct">'+pct+'%</span></div>'
+       + '<div class="cbar"><i style="width:'+pct+'%;background:'+STATUS_COLOR[k]+'"></i></div>'
+       + '<div class="csub">'+v+' ครั้ง จาก '+total+' ครั้ง</div></div>';
+  });
+  return h;
+}
+
+/* ---------- แท็บ: การมาเรียน ---------- */
+function renderAttendanceTab(){
+  let h = '';
+  STATE.forEach(function(kid){
+    kid.courses.forEach(function(c){
+      const s = c.summary || {};
+      h += '<div class="kid"><div class="kid-top">'
+        + '<span class="kid-av">'+initials(kid.student_name)+'</span>'
+        + '<div><div class="kid-nm">'+esc(kid.student_name)+'</div>'
+        + '<div class="kid-meta">'+esc(c.name)+'</div></div></div>';
+      if(s.total){
+        h += '<div class="donut-card">'
+          + '<div class="donut-wrap">'+donutChart(s)+'<div class="donut-center"><b>'+s.total+'</b><small>ครั้งเรียน</small></div></div>'
+          + '<div class="cat-list">'+catList(s)+'</div>'
+          + '</div>';
+        h += '<div class="group-label">ประวัติการเช็คชื่อ</div>';
+        h += '<div class="rec-list">';
+        (c.records||[]).forEach(function(r){
+          h += '<div class="rec-item"><span>'+thaiDate(r.date)+(r.note?' · '+esc(r.note):'')+'</span>'
+            + '<span class="rec-st '+r.status+'">'+esc(r.status_th)+'</span></div>';
+        });
+        h += '</div>';
+      } else {
+        h += '<div class="empty-att">ยังไม่มีบันทึกการมาเรียน</div>';
+      }
+      h += '</div>';
+    });
+  });
+  if(!h){ h = emptyState('ยังไม่มีคอร์สที่ติดตามได้'); }
+  render(h);
+}
+
+/* ---------- แท็บ: ผลการเรียน ---------- */
+function renderResultsTab(){
+  let h = '';
+  STATE.forEach(function(kid){
+    kid.courses.forEach(function(c){
+      h += '<div class="kid"><div class="kid-top">'
+        + '<span class="kid-av">'+initials(kid.student_name)+'</span>'
+        + '<div><div class="kid-nm">'+esc(kid.student_name)+'</div>'
+        + '<div class="kid-meta">'+esc(c.name)+'</div></div></div>';
+      if(c.result){
+        h += '<div class="result" style="margin-top:0"><div class="rh">'+svg('ic-award')+'ผลการเรียน</div><div class="rv">'
+          + (c.result.score!=null && c.result.score!==''?'คะแนน <b>'+esc(c.result.score)+'</b> ':'')
+          + (c.result.grade?' · เกรด <b>'+esc(c.result.grade)+'</b>':'')
+          + (c.result.comment?'<div style="margin-top:4px;color:var(--soft)">'+esc(c.result.comment)+'</div>':'')
+          + '</div></div>';
+      } else {
+        h += '<div class="empty-att">ยังไม่มีผลการเรียน</div>';
+      }
+      h += '</div>';
+    });
+  });
+  if(!h){ h = emptyState('ยังไม่มีคอร์สที่ติดตามได้'); }
+  render(h);
+}
+
+/* ---------- แท็บ: ตั้งค่า ---------- */
+function renderSettingsTab(){
+  const name = (PROFILE && PROFILE.displayName) || '-';
+  const h = '<div class="set-card"><div class="set-row">'
+      + '<span class="set-av">'+initials(name)+'</span>'
+      + '<div><div class="set-nm">'+esc(name)+'</div><div class="set-sub">เชื่อมต่อผ่านบัญชี LINE</div></div>'
+      + '</div>'
+      + '<a class="btn btn-primary" style="text-decoration:none" href="enroll.html">สมัครคอร์สเพิ่มเติม</a>'
+    + '</div>'
+    + '<div class="set-card"><div class="section-title">บัญชีและความเป็นส่วนตัว</div>'
+      + '<p class="set-sub" style="margin:0 0 14px">ยกเลิกการเชื่อมต่อจะทำให้ไม่ได้รับการแจ้งเตือนผ่าน LINE และไม่เห็นข้อมูลคอร์สในหน้านี้อีก จนกว่าจะเชื่อมต่อใหม่</p>'
+      + '<button class="btn btn-danger" id="btnUnlink">ยกเลิกการเชื่อมต่อบัญชี LINE</button>'
+    + '</div>';
+  render(h);
+  document.getElementById('btnUnlink').onclick = function(){
+    openConfirm('ยกเลิกการเชื่อมต่อบัญชี LINE?', 'คุณจะไม่ได้รับแจ้งเตือนและไม่เห็นข้อมูลคอร์สที่นี่อีก จนกว่าจะเชื่อมต่อใหม่', doUnlink);
+  };
+}
+async function doUnlink(){
+  const btn = document.getElementById('cfYes');
+  if(btn){ btn.disabled = true; btn.textContent = 'กำลังดำเนินการ...'; }
+  try{
+    const res = await api('unlinkCourseParentLiff', { line_user_id: PROFILE.userId });
+    closeSheet();
+    if(res.status==='success'){ toast(res.message); setTimeout(function(){ location.reload(); }, 1200); }
+    else { toast(res.message || 'ไม่สำเร็จ'); }
+  }catch(e){ closeSheet(); toast('เกิดข้อผิดพลาด'); }
+}
+
+/* ---------- ปุ่มลอย: แจ้งลาด่วน (เลือกคอร์สก่อนถ้ามีมากกว่า 1) ---------- */
+function quickLeave(){
+  const opts = [];
+  STATE.forEach(function(kid){
+    kid.courses.forEach(function(c){
+      opts.push({ enrollId: kid.enrollment_id, courseId: c.course_id, label: kid.student_name+' · '+c.name });
+    });
+  });
+  if(!opts.length){ toast('ยังไม่มีคอร์สให้แจ้งลา'); return; }
+  if(opts.length===1){ openLeave(opts[0].enrollId, opts[0].courseId, opts[0].label); return; }
+
+  let h = '<h3>แจ้งลา</h3><p class="sub">เลือกคอร์สที่ต้องการแจ้งลา</p><div class="pick-list">';
+  opts.forEach(function(o){
+    h += '<button class="pick-item" onclick="closeSheet();openLeave(\''+o.enrollId+'\',\''+o.courseId+'\',\''+esc(o.label)+'\')">'
+      + esc(o.label) + svg('ic-chev') + '</button>';
+  });
+  h += '</div><button class="btn btn-ghost" onclick="closeSheet()">ยกเลิก</button>';
+  document.getElementById('sheet').innerHTML = h;
+  document.getElementById('overlay').classList.add('show');
+}
+
+/* ---------- แจ้งลา ---------- */
+function openLeave(enrollId, courseId, courseName){
+  const h = '<h3>แจ้งลา</h3><p class="sub">'+esc(courseName)+'</p>'
+    + '<div class="field"><label>วันที่ลา</label><input type="date" class="ctl" id="lvDate" value="'+today()+'" min="'+today()+'"></div>'
+    + '<div class="field"><label>เหตุผล (ไม่บังคับ)</label><input type="text" class="ctl" id="lvReason" placeholder="เช่น ไม่สบาย / ติดธุระ"></div>'
+    + '<button class="btn btn-primary" id="lvSubmit">ยืนยันแจ้งลา</button>'
+    + '<button class="btn btn-ghost" onclick="closeSheet()">ยกเลิก</button>';
+  document.getElementById('sheet').innerHTML = h;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('lvSubmit').onclick = function(){ submitLeave(enrollId, courseId); };
+}
+function closeSheet(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click', function(e){ if(e.target.id==='overlay') closeSheet(); });
+
+/* ---------- confirm dialog (ใช้ overlay เดียวกับแจ้งลา) ---------- */
+function openConfirm(title, msg, onYes){
+  const h = '<h3>'+esc(title)+'</h3><p class="sub">'+esc(msg)+'</p>'
+    + '<button class="btn btn-danger" id="cfYes">ยืนยัน</button>'
+    + '<button class="btn btn-ghost" onclick="closeSheet()">ยกเลิก</button>';
+  document.getElementById('sheet').innerHTML = h;
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('cfYes').onclick = onYes;
+}
+
+async function submitLeave(enrollId, courseId){
+  const date = document.getElementById('lvDate').value;
+  const reason = document.getElementById('lvReason').value.trim();
+  if(!date){ toast('กรุณาเลือกวันที่'); return; }
+  const btn = document.getElementById('lvSubmit'); btn.disabled = true; btn.textContent = 'กำลังส่ง...';
+  try{
+    const res = await api('submitCourseLeave', { line_user_id: PROFILE.userId, enrollment_id: enrollId, course_id: courseId, date: date, reason: reason });
+    if(res.status==='success'){
+      closeSheet(); toast(res.message);
+      if(liff.isInClient()){ try{ await liff.sendMessages([{type:'text', text:'แจ้งลาคอร์สเรียบร้อยแล้ว วันที่ '+date}]); }catch(e){} }
+      load();
+    } else { toast(res.message||'ส่งไม่สำเร็จ'); btn.disabled=false; btn.textContent='ยืนยันแจ้งลา'; }
+  }catch(e){ toast('เกิดข้อผิดพลาด'); btn.disabled=false; btn.textContent='ยืนยันแจ้งลา'; }
+}
+
+/* ══════════════════════════════════════════════════
+   ครู — เช็คชื่อคอร์สผ่าน LINE
+   ══════════════════════════════════════════════════ */
+function renderTeacherHome(){
+  if(!TEACHER_COURSES.length){
+    render(emptyState('ยังไม่มีคอร์สที่คุณครูเช็คชื่อได้'));
+    return;
+  }
+  let h = '<div class="group-label">คอร์สที่เช็คชื่อได้</div>';
+  TEACHER_COURSES.forEach(function(c){
+    const tm = (c.time_start||'') + (c.time_end?('–'+c.time_end):'');
+    h += '<div class="tc-card" onclick="openTeacherCourse(\''+c.id+'\')">'
+      + '<div class="tc-row-l"><div class="tc-ic">'+svg('ic-book')+'</div>'
+      + '<div><div class="tc-nm">'+esc(c.name)+'</div>'
+      + '<div class="tc-meta">'
+        + (c.days?'<span>'+svg('ic-calendar')+esc(c.days)+'</span>':'')
+        + (tm?'<span>'+svg('ic-clock')+esc(tm)+' น.</span>':'')
+      + '</div></div></div>'
+      + svg('ic-chev').replace('class="i"','class="i chev"')
+      + '</div>';
+  });
+  render(h);
+}
+
+async function openTeacherCourse(courseId){
+  TCUR.courseId = courseId; TCUR.date = TCUR.date || today();
+  render('<div class="loading"><div class="spin"></div>กำลังโหลดรายชื่อ...</div>');
+  await fetchTeacherAttendance();
+}
+
+async function fetchTeacherAttendance(){
+  const res = await api('getCourseAttendanceLiff', { line_user_id: PROFILE.userId, course_id: TCUR.courseId, date: TCUR.date });
+  if(res.status!=='success'){ render('<div class="notice">'+esc(res.message||'เกิดข้อผิดพลาด')+'</div>'); return; }
+  TCUR.records = res.records;
+  renderTeacherAttendance(res);
+}
+
+function renderTeacherAttendance(res){
+  let h = '<div class="link-back" onclick="TCUR.courseId=\'\';renderTeacherHome()">'+svg('ic-arrow-left')+'รายชื่อคอร์ส</div>';
+  h += '<div class="kid" style="margin-bottom:12px">'
+    + '<div style="font-weight:700;font-size:15.5px;margin-bottom:10px">'+esc(res.course_name)+'</div>'
+    + '<div class="field" style="margin-bottom:0"><label>วันที่เช็คชื่อ</label><input type="date" class="ctl" id="tDate" value="'+TCUR.date+'"></div>'
+    + '</div>';
+  if(res.group_mode){
+    h += '<button class="btn btn-ghost" style="margin:0 0 12px" onclick="openTeacherGroupPicker(\''+TCUR.courseId+'\')">'+svg('ic-users')+' เลือกนักเรียนของฉัน</button>';
+  }
+  if(res.saved) h += '<div class="saved-note">'+svg('ic-check')+' บันทึกแล้ว โดย '+esc(res.saved_by||'')+' (แก้ไขแล้วบันทึกซ้ำได้)</div>';
+  if(!res.records.length){
+    h += emptyState(res.group_mode ? 'ยังไม่มีนักเรียนในกลุ่มของคุณ — กด "เลือกนักเรียนของฉัน" เพื่อเลือกเด็กที่จะสอน' : 'ยังไม่มีนักเรียนที่อนุมัติในคอร์สนี้');
+  } else {
+    res.records.forEach(function(r, i){
+      h += '<div class="trow"><div class="trow-nm">'+(i+1)+'. '+esc(r.student_name)+'</div>'
+        + '<div class="tseg" data-eid="'+r.enrollment_id+'">'
+        + ['present','late','absent','leave'].map(function(st){
+            return '<button data-st="'+st+'" class="'+(r.status===st?'on '+st:'')+'" onclick="setTeacherSt(this,\''+r.enrollment_id+'\',\''+st+'\')">'+ST_TH[st]+'</button>';
+          }).join('')
+        + '</div></div>';
+    });
+    h += '<button class="btn btn-primary" id="btnSaveTAtt" style="margin-top:6px">'+svg('ic-check')+' บันทึกเช็คชื่อ</button>';
+  }
+  render(h);
+  const dEl = document.getElementById('tDate');
+  if(dEl) dEl.onchange = function(){ TCUR.date = this.value; fetchTeacherAttendance(); };
+  const saveBtn = document.getElementById('btnSaveTAtt');
+  if(saveBtn) saveBtn.onclick = saveTeacherAttendance;
+}
+
+function setTeacherSt(btn, enrollId, st){
+  const seg = btn.closest('.tseg');
+  seg.querySelectorAll('button').forEach(function(b){ b.className = ''; });
+  btn.className = 'on '+st;
+  const r = TCUR.records.find(function(x){ return x.enrollment_id===enrollId; });
+  if(r) r.status = st;
+}
+
+async function saveTeacherAttendance(){
+  const btn = document.getElementById('btnSaveTAtt'); btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+  const payload = { course_id: TCUR.courseId, date: TCUR.date,
+    records: TCUR.records.map(function(r){ return { enrollment_id:r.enrollment_id, student_name:r.student_name, status:r.status, note:'' }; }) };
+  try{
+    const res = await api('saveCourseAttendanceLiff', { line_user_id: PROFILE.userId, payload: payload });
+    if(res.status==='success'){ toast(res.message); fetchTeacherAttendance(); }
+    else { toast(res.message||'บันทึกไม่สำเร็จ'); btn.disabled=false; btn.innerHTML=svg('ic-check')+' บันทึกเช็คชื่อ'; }
+  }catch(e){ toast('เกิดข้อผิดพลาด'); btn.disabled=false; btn.innerHTML=svg('ic-check')+' บันทึกเช็คชื่อ'; }
+}
+
+/* ---------- ครู: เลือกนักเรียนที่ตัวเองจะสอน (คอร์สหลายครู) ---------- */
+let TGROUP = { courseId:'', data:null };
+async function openTeacherGroupPicker(courseId){
+  TGROUP.courseId = courseId;
+  const res = await api('getCourseGroupsLiff', { line_user_id: PROFILE.userId, course_id: courseId });
+  if(res.status!=='success'){ toast(res.message||'เกิดข้อผิดพลาด'); return; }
+  TGROUP.data = res;
+  renderGroupPickerSheet();
+  document.getElementById('overlay').classList.add('show');
+}
+function renderGroupPickerSheet(){
+  const d = TGROUP.data, me = d.my_teacher_id;
+  let items = '';
+  if(!d.students.length){ items = '<div class="empty-att">ยังไม่มีนักเรียนที่อนุมัติในคอร์สนี้</div>'; }
+  else d.students.forEach(function(st){
+    const mine = st.assigned_teacher_id === me;
+    const takenByOther = st.assigned_teacher_id && !mine;
+    let right;
+    if(mine){ right = '<button class="btn-leave" style="background:var(--green-50);color:var(--green)" onclick="toggleClaim(\''+st.enrollment_id+'\',\'\')">'+svg('ic-check')+' ของฉัน</button>'; }
+    else if(takenByOther){ right = '<span style="font-size:11.5px;color:var(--mut)">'+esc(st.assigned_teacher_name||'ครูอื่น')+'</span>'; }
+    else { right = '<button class="btn-leave" onclick="toggleClaim(\''+st.enrollment_id+'\',\''+me+'\')">+ เลือก</button>'; }
+    items += '<div class="pick-item" style="cursor:default">'
+      + '<div><div style="font-weight:600;font-size:13.5px">'+esc(st.student_name)+'</div>'
+      + '<div style="font-size:11.5px;color:var(--soft)">'+esc(st.level||'-')+' · '+esc(st.room||'-')+'</div></div>'
+      + right + '</div>';
+  });
+  const h = '<h3>เลือกนักเรียนของฉัน</h3><p class="sub">'+esc(d.course_name)+' — แตะ "เลือก" เพื่อรับเด็กเข้ากลุ่มที่คุณสอน</p>'
+    + '<div class="pick-list">'+items+'</div>'
+    + '<button class="btn btn-primary" onclick="closeSheet();fetchTeacherAttendance()">เสร็จสิ้น</button>';
+  document.getElementById('sheet').innerHTML = h;
+}
+async function toggleClaim(enrollId, teacherId){
+  const res = await api('assignCourseStudentLiff', { line_user_id: PROFILE.userId, course_id: TGROUP.courseId, enrollment_id: enrollId, teacher_id: teacherId });
+  if(res.status!=='success'){ toast(res.message||'ไม่สำเร็จ'); return; }
+  // อัปเดต state ในหน่วยความจำแล้ว re-render sheet
+  const st = TGROUP.data.students.find(function(x){ return x.enrollment_id===enrollId; });
+  if(st){ st.assigned_teacher_id = teacherId; st.assigned_teacher_name = teacherId ? (TGROUP.data.teachers.find(function(t){return t.id===teacherId;})||{}).name||'' : ''; }
+  renderGroupPickerSheet();
+}
+
+/* ---------- ครู: ยื่นใบลาของตัวเอง ---------- */
+function renderTeacherLeaveFormTab(){
+  tLeavePendingPhoto = null;
+  let typeChips = '<div class="ltype-grid">';
+  Object.keys(LEAVE_TYPES_T).forEach(function(k, i){
+    typeChips += '<button type="button" class="ltype-btn'+(i===0?' on':'')+'" data-v="'+k+'" onclick="pickTLtype(this)">'+LEAVE_TYPES_T[k]+'</button>';
+  });
+  typeChips += '</div>';
+
+  const h = '<div class="kid">'
+    + '<div style="font-weight:700;font-size:15.5px;margin-bottom:12px">ยื่นใบลา</div>'
+    + '<div class="field"><label>ประเภทการลา</label>'+typeChips+'</div>'
+    + '<div class="field"><label>ตั้งแต่วันที่</label><input type="date" class="ctl" id="tlFrom" value="'+today()+'"></div>'
+    + '<div class="field"><label>ถึงวันที่</label><input type="date" class="ctl" id="tlTo" value="'+today()+'"></div>'
+    + '<div class="field"><label>เหตุผล</label><textarea class="ctl" id="tlReason" rows="3" placeholder="ระบุเหตุผล (ไม่บังคับ)"></textarea></div>'
+    + '<div class="field"><label>แนบเอกสาร (ไม่บังคับ)</label><input type="file" class="ctl" id="tlPhoto" accept="image/*"></div>'
+    + '<button class="btn btn-primary" id="btnTLeaveSubmit">'+svg('ic-check')+' ส่งใบลา</button>'
+    + '</div>';
+
+  render(h);
+  document.getElementById('tlPhoto').onchange = function(){
+    const f = this.files[0]; if(!f) return;
+    if(f.size > 4*1024*1024){ toast('ไฟล์ต้องไม่เกิน 4MB'); this.value=''; return; }
+    const r = new FileReader(); r.onload = function(e){ tLeavePendingPhoto = e.target.result; }; r.readAsDataURL(f);
+  };
+  document.getElementById('btnTLeaveSubmit').onclick = submitTeacherLeave;
+}
+async function renderTeacherLeaveHistoryTab(){
+  render('<div class="loading"><div class="spin"></div>กำลังโหลด...</div>');
+  const res = await api('teacherLiffInit', { line_user_id: PROFILE.userId });
+  TEACHER_LEAVES = (res.status==='success') ? res.leaves : [];
+
+  let h = '<div class="group-label">ใบลาของฉัน</div>';
+  if(!TEACHER_LEAVES.length) h += emptyState('ยังไม่มีประวัติการลา');
+  else TEACHER_LEAVES.forEach(function(l){ h += teacherLeaveItem(l); });
+  render(h);
+}
+
+/* ---------- ครู: อนุมัติใบลา (เฉพาะบทบาทที่อยู่ในสายการอนุมัติ) ---------- */
+let TEACHER_QUEUE = [];
+async function renderTeacherApproveTab(){
+  render('<div class="loading"><div class="spin"></div>กำลังโหลด...</div>');
+  const res = await api('getLeavesForApproval', { line_user_id: PROFILE.userId });
+  TEACHER_QUEUE = (res.status==='success') ? res.leaves : [];
+
+  let h = '<div class="group-label">รออนุมัติจากคุณ</div>';
+  if(!TEACHER_QUEUE.length) h += emptyState('ไม่มีรายการรออนุมัติ');
+  else TEACHER_QUEUE.forEach(function(l){ h += approveQueueItem(l); });
+  render(h);
+}
+function approveQueueItem(l){
+  const typeLabel = LEAVE_TYPES_T[l.leave_type] || l.leave_type;
+  const who = l.subject_type==='teacher' ? (l.teacher_name||'-') : (l.student_name||'-');
+  return '<div class="lv-item" style="cursor:default"><div class="lv-top">'
+    + '<span class="lv-type">'+esc(who)+(l.class_name?' <span style="font-weight:400;color:var(--soft)">· '+esc(l.class_name)+'</span>':'')+'</span>'
+    + '<span class="lv-badge pending">'+esc(typeLabel)+'</span></div>'
+    + '<div class="lv-meta">'+thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' – '+thaiDate(l.date_to):'')+' · '+(l.days||1)+' วัน</div>'
+    + (l.reason?'<div class="lv-reason">'+esc(l.reason)+'</div>':'')
+    + '<div style="display:flex;gap:8px;margin-top:12px">'
+      + '<button class="btn btn-primary" style="flex:1;width:auto;padding:10px" onclick="doApproveLeave(\''+l.id+'\')">'+svg('ic-check')+' อนุมัติ</button>'
+      + '<button class="btn btn-danger" style="flex:1;width:auto;padding:10px" onclick="doRejectLeave(\''+l.id+'\')">'+svg('ic-x')+' ไม่อนุมัติ</button>'
+    + '</div></div>';
+}
+function doApproveLeave(id){
+  openConfirm('อนุมัติใบลานี้?', 'ยืนยันอนุมัติคำขอลานี้', function(){ submitApproveDecision(id, 'approveLeaveLiff'); });
+}
+function doRejectLeave(id){
+  openConfirm('ไม่อนุมัติใบลานี้?', 'ยืนยันปฏิเสธคำขอลานี้', function(){ submitApproveDecision(id, 'rejectLeaveLiff'); });
+}
+async function submitApproveDecision(id, action){
+  const btn = document.getElementById('cfYes');
+  if(btn){ btn.disabled = true; btn.textContent = 'กำลังดำเนินการ...'; }
+  try{
+    const res = await api(action, { line_user_id: PROFILE.userId, leave_id: id });
+    closeSheet();
+    if(res.status==='success'){ toast(res.message); renderTeacherApproveTab(); }
+    else toast(res.message||'ไม่สำเร็จ');
+  }catch(e){ closeSheet(); toast('เกิดข้อผิดพลาด'); }
+}
+
+function pickTLtype(btn){
+  document.querySelectorAll('.ltype-btn').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+}
+function teacherLeaveItem(l){
+  const st = l.status || 'pending';
+  let curLevel = '';
+  if(st==='pending' && l.approvals){
+    const cur = l.approvals.find(function(a){ return a.status==='pending'; });
+    if(cur) curLevel = ' · รอ'+esc(cur.role_label||'');
+  }
+  return '<div class="lv-item" onclick="openTeacherLeaveDetail(\''+l.id+'\')"><div class="lv-top">'
+    + '<span class="lv-type">'+(LEAVE_TYPES_T[l.leave_type]||l.leave_type)+'</span>'
+    + '<span class="lv-badge '+st+'">'+(LEAVE_STATUS_TH[st]||st)+'</span></div>'
+    + '<div class="lv-meta">'+thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' – '+thaiDate(l.date_to):'')+' · '+(l.days||1)+' วัน'+curLevel+'</div>'
+    + (l.reason?'<div class="lv-reason">'+esc(l.reason)+'</div>':'')
+    + '</div>';
+}
+
+/* ---------- ครู: รายละเอียดใบลา + สายการอนุมัติ ---------- */
+function openTeacherLeaveDetail(id){
+  const l = TEACHER_LEAVES.find(function(x){ return x.id===id; });
+  if(!l) return;
+  renderTeacherLeaveDetail(l);
+}
+function renderTeacherLeaveDetail(l){
+  const st = l.status || 'pending';
+  let h = '<div class="link-back" onclick="renderTeacherLeaveHistoryTab()">'+svg('ic-arrow-left')+'ใบลาของฉัน</div>';
+  h += '<div class="detail-card">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">'
+      + '<div style="font-weight:700;font-size:16px">'+(LEAVE_TYPES_T[l.leave_type]||l.leave_type)+'</div>'
+      + '<span class="lv-badge '+st+'">'+(LEAVE_STATUS_TH[st]||st)+'</span>'
+    + '</div>'
+    + '<div class="detail-row"><label>วันที่ลา</label><div class="v">'
+      + thaiDate(l.date_from)+(l.date_to&&l.date_to!==l.date_from?' – '+thaiDate(l.date_to):'')+' ('+(l.days||1)+' วัน)</div></div>'
+    + (l.reason?'<div class="detail-row"><label>เหตุผล</label><div class="v">'+esc(l.reason)+'</div></div>':'')
+    + '</div>';
+  if(l.approvals && l.approvals.length){
+    h += '<div class="detail-card"><div class="group-label" style="margin-top:0">สายการอนุมัติ</div>'+buildApprovalTimeline(l.approvals)+'</div>';
+  }
+  render(h);
+  window.scrollTo(0,0);
+}
+function buildApprovalTimeline(approvals){
+  const TL = {
+    approved: { cls:'tl-approved', icon:'ic-check' },
+    rejected: { cls:'tl-rejected', icon:'ic-x' },
+    pending:  { cls:'tl-pending',  icon:'ic-clock' },
+    waiting:  { cls:'tl-waiting',  icon:'' }
+  };
+  let h = '<div class="tl-wrap">';
+  approvals.forEach(function(a, i){
+    const tl = TL[a.status] || TL.waiting;
+    const isLast = i === approvals.length-1;
+    const actedDate = a.acted_at ? String(a.acted_at).split('T')[0] : '';
+    h += '<div class="tl-item '+tl.cls+'">'
+      + '<div class="tl-left"><div class="tl-dot">'+(tl.icon?svg(tl.icon):'')+'</div>'+(!isLast?'<div class="tl-line"></div>':'')+'</div>'
+      + '<div class="tl-body">'
+        + '<div class="tl-step">ชั้น '+a.level+' · '+esc(a.role_label||a.role)+'</div>'
+        + '<div class="tl-role">'+esc(a.approver_name||'(ไม่ระบุ)')+'</div>'
+        + '<span class="lv-badge '+a.status+'" style="margin-top:4px;display:inline-block">'+(LEAVE_STATUS_TH[a.status]||a.status)+'</span>'
+        + (actedDate?'<div class="tl-when">'+thaiDate(actedDate)+'</div>':'')
+        + (a.comment?'<div class="tl-comment">'+esc(a.comment)+'</div>':'')
+      + '</div></div>';
+  });
+  return h + '</div>';
+}
+
+async function submitTeacherLeave(){
+  const typeEl = document.querySelector('.ltype-btn.on');
+  const payload = {
+    line_user_id: PROFILE.userId,
+    leave_type: typeEl ? typeEl.getAttribute('data-v') : 'sick',
+    date_from: document.getElementById('tlFrom').value,
+    date_to: document.getElementById('tlTo').value,
+    reason: document.getElementById('tlReason').value.trim(),
+    photo: tLeavePendingPhoto || ''
+  };
+  if(!payload.date_from){ toast('กรุณาเลือกวันที่'); return; }
+  const btn = document.getElementById('btnTLeaveSubmit'); btn.disabled = true; btn.textContent = 'กำลังส่ง...';
+  try{
+    const res = await api('submitTeacherLeaveLiff', payload);
+    if(res.status==='success'){
+      toast(res.message);
+      if(liff.isInClient()){ try{ await liff.sendMessages([{type:'text', text:'ยื่นใบลาเรียบร้อยแล้ว รอการอนุมัติ'}]); }catch(e){} }
+      setTab('thistory');
+    } else { toast(res.message||'ส่งไม่สำเร็จ'); btn.disabled=false; btn.innerHTML=svg('ic-check')+' ส่งใบลา'; }
+  }catch(e){ toast('เกิดข้อผิดพลาด'); btn.disabled=false; btn.innerHTML=svg('ic-check')+' ส่งใบลา'; }
+}
+
+function renderTeacherSettingsTab(){
+  const name = (TEACHER && TEACHER.name) || '-';
+  render('<div class="set-card"><div class="set-row">'
+      + '<span class="set-av">'+initials(name)+'</span>'
+      + '<div><div class="set-nm">'+esc(name)+'</div><div class="set-sub">เชื่อมต่อผ่านบัญชี LINE (ครู)</div></div>'
+      + '</div></div>'
+    + '<div class="set-card"><div class="section-title">บัญชีและความเป็นส่วนตัว</div>'
+      + '<p class="set-sub" style="margin:0 0 14px">ยกเลิกการเชื่อมต่อจะทำให้ไม่เห็นเมนูเช็คชื่อที่นี่อีก จนกว่าจะเชื่อมต่อใหม่</p>'
+      + '<button class="btn btn-danger" id="btnUnlinkT">ยกเลิกการเชื่อมต่อบัญชี LINE</button>'
+    + '</div>');
+  document.getElementById('btnUnlinkT').onclick = function(){
+    openConfirm('ยกเลิกการเชื่อมต่อบัญชี LINE?', 'คุณจะไม่เห็นเมนูเช็คชื่อที่นี่อีก จนกว่าจะเชื่อมต่อใหม่', doUnlinkTeacher);
+  };
+}
+async function doUnlinkTeacher(){
+  const btn = document.getElementById('cfYes');
+  if(btn){ btn.disabled = true; btn.textContent = 'กำลังดำเนินการ...'; }
+  try{
+    const res = await api('unlinkLiff', { line_user_id: PROFILE.userId });
+    closeSheet();
+    if(res.status==='success'){ toast(res.message); setTimeout(function(){ location.reload(); }, 1200); }
+    else { toast(res.message || 'ไม่สำเร็จ'); }
+  }catch(e){ closeSheet(); toast('เกิดข้อผิดพลาด'); }
+}
+
+boot();
+</script>
+</body>
+</html>

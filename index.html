@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ผู้ปกครอง — ระบบเช็คชื่อนักเรียน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-head">
+  <h1>ระบบแจ้งเตือนการมาเรียน</h1>
+  <p id="headSub">สำหรับผู้ปกครอง</p>
+</div>
+
+<div class="wrap" id="app">
+  <div class="loading"><div class="spin"></div>กำลังเชื่อมต่อ...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="config.js"></script>
+<script>
+let PROFILE = null;
+let STATE = { children: [], leaves: [], attendance: [] };
+let pendingPhoto = null;
+
+const LEAVE_TYPES = { sick:'ลาป่วย', personal:'ลากิจ', other:'อื่นๆ' };
+const STATUS_TH = { pending:'รออนุมัติ', approved:'อนุมัติแล้ว', rejected:'ไม่อนุมัติ' };
+const ATT_TH = { present:'มา', late:'สาย', absent:'ขาด', leave:'ลา', activity:'กิจกรรม' };
+
+function esc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function initials(n){ return (n||'?').trim().charAt(0); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function thaiDate(ymd){
+  if(!ymd) return '';
+  const p=String(ymd).split('-'); const m=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return parseInt(p[2],10)+' '+m[parseInt(p[1],10)]+' '+(parseInt(p[0],10)+543);
+}
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
+
+async function api(action, data){
+  const res = await fetch(GAS_API_URL, { method:'POST', body: JSON.stringify(Object.assign({action}, data||{})) });
+  return res.json();
+}
+
+async function boot(){
+  if(!GAS_API_URL || !LIFF_ID){
+    render('<div class="notice">ยังไม่ได้ตั้งค่า GAS_API_URL หรือ LIFF_ID ในไฟล์ config.js</div>');
+    return;
+  }
+  try{
+    await liff.init({ liffId: LIFF_ID });
+    if(!liff.isLoggedIn()){ liff.login(); return; }
+    PROFILE = await liff.getProfile();
+    loadData();
+  }catch(e){
+    render('<div class="notice">เชื่อมต่อ LIFF ไม่สำเร็จ: '+esc(e.message||e)+'</div>');
+  }
+}
+
+async function loadData(){
+  const res = await api('parentInit', { line_user_id: PROFILE.userId });
+  if(res.status==='unlinked'){
+    render('<div class="notice"><strong>ยังไม่ได้เชื่อมบัญชี</strong><br><br>'
+      + 'กรุณากลับไปที่แชท LINE แล้วพิมพ์ "รหัสนักเรียน" ของบุตรหลานเพื่อเชื่อมบัญชีก่อนค่ะ</div>');
+    return;
+  }
+  if(res.status!=='success'){ render('<div class="notice">'+esc(res.message)+'</div>'); return; }
+  STATE.children = res.children; STATE.leaves = res.leaves; STATE.attendance = res.attendance;
+  document.getElementById('headSub').textContent = 'สวัสดีค่ะ คุณ'+res.parent.name;
+  renderHome();
+}
+
+function render(html){ document.getElementById('app').innerHTML = html; }
+
+function renderHome(){
+  let h = '<div class="sec-title">บุตรหลานในความดูแล</div>';
+  STATE.children.forEach(function(c){
+    const av = c.photo_file_id
+      ? '<img class="avatar" src="https://drive.google.com/thumbnail?id='+c.photo_file_id+'&sz=w400">'
+      : '<span class="avatar">'+initials(c.name)+'</span>';
+    h += '<div class="card"><div class="child-row">'+av
+      + '<div class="info"><div class="nm">'+esc(c.name)+'</div><div class="cl">'+esc(c.class_name||'-')+' • รหัส '+esc(c.code)+'</div></div>'
+      + '<button class="btn btn-ghost btn-sm" onclick="openLeaveForm(\''+c.id+'\')">ยื่นใบลา</button>'
+      + '</div></div>';
+  });
+
+  h += '<div class="sec-title">ประวัติการลา</div>';
+  if(!STATE.leaves.length){ h += '<div class="card" style="text-align:center;color:#8a93a6">ยังไม่มีรายการลา</div>'; }
+  else STATE.leaves.forEach(function(l){ h += leaveItem(l); });
+
+  render(h);
+}
+
+function leaveItem(l){
+  const st = l.status || 'pending';
+  let levelInfo = '';
+  if(st==='pending' && l.approvals){
+    const cur = l.approvals.find(function(a){ return a.status==='pending'; });
+    if(cur) levelInfo = ' • รอ'+esc(cur.role_label||'');
+  }
+  return '<div class="leave-item"><div class="top">'
+    + '<span class="nm">'+esc(l.student_name)+'</span>'
+    + '<span class="badge b-'+st+'">'+(STATUS_TH[st]||st)+'</span></div>'
+    + '<div class="meta">'+(LEAVE_TYPES[l.leave_type]||l.leave_type)+' • '+thaiDate(l.date_from)
+      + (l.date_to && l.date_to!==l.date_from ? ' - '+thaiDate(l.date_to) : '') + levelInfo + '</div>'
+    + (l.reason ? '<div class="rs">'+esc(l.reason)+'</div>' : '')
+    + '</div>';
+}
+
+function openLeaveForm(childId){
+  const c = STATE.children.find(function(x){ return x.id===childId; });
+  pendingPhoto = null;
+  let h = '<div class="app-sub"></div>';
+  h = '<div class="sec-title">ยื่นใบลา — '+esc(c.name)+'</div>'
+    + '<div class="card">'
+    + '<div class="field"><label>ประเภทการลา</label><div class="chips" id="ltype">'
+      + chip('sick','ลาป่วย',true)+chip('personal','ลากิจ',false)+chip('other','อื่นๆ',false)+'</div></div>'
+    + '<div class="row2">'
+      + '<div class="field"><label>ตั้งแต่วันที่</label><input type="date" class="ctl" id="dFrom" value="'+todayStr()+'"></div>'
+      + '<div class="field"><label>ถึงวันที่</label><input type="date" class="ctl" id="dTo" value="'+todayStr()+'"></div>'
+    + '</div>'
+    + '<div class="field"><label>เหตุผล</label><textarea class="ctl" id="reason" rows="3" placeholder="ระบุเหตุผลการลา"></textarea></div>'
+    + '<div class="field"><label>แนบรูป (ใบรับรองแพทย์ ฯลฯ) — ไม่บังคับ</label>'
+      + '<input type="file" class="ctl" id="photo" accept="image/*"><img class="photo-prev hidden" id="photoPrev"></div>'
+    + '<button class="btn btn-primary" id="btnSubmit" onclick="submitLeave(\''+childId+'\')">ส่งใบลา</button>'
+    + '<button class="btn btn-ghost" style="margin-top:8px" onclick="renderHome()">ยกเลิก</button>'
+    + '</div>';
+  render(h);
+
+  document.querySelectorAll('#ltype .chip').forEach(function(el){
+    el.onclick = function(){ document.querySelectorAll('#ltype .chip').forEach(x=>x.classList.remove('on')); el.classList.add('on'); };
+  });
+  document.getElementById('photo').onchange = function(){
+    const f=this.files[0]; if(!f) return;
+    if(f.size>4*1024*1024){ toast('รูปต้องไม่เกิน 4MB'); this.value=''; return; }
+    const r=new FileReader(); r.onload=function(e){ pendingPhoto=e.target.result; const p=document.getElementById('photoPrev'); p.src=e.target.result; p.classList.remove('hidden'); }; r.readAsDataURL(f);
+  };
+}
+function chip(val,label,on){ return '<div class="chip'+(on?' on':'')+'" data-v="'+val+'">'+label+'</div>'; }
+
+async function submitLeave(childId){
+  const typeEl = document.querySelector('#ltype .chip.on');
+  const payload = {
+    line_user_id: PROFILE.userId,
+    student_id: childId,
+    leave_type: typeEl ? typeEl.getAttribute('data-v') : 'sick',
+    date_from: document.getElementById('dFrom').value,
+    date_to: document.getElementById('dTo').value,
+    reason: document.getElementById('reason').value.trim(),
+    photo: pendingPhoto || ''
+  };
+  if(!payload.date_from){ toast('กรุณาเลือกวันที่'); return; }
+  const btn = document.getElementById('btnSubmit'); btn.disabled=true; btn.textContent='กำลังส่ง...';
+  try{
+    const res = await api('submitStudentLeave', payload);
+    if(res.status==='success'){
+      toast('ส่งใบลาเรียบร้อย');
+      if(liff.isInClient()){ try{ await liff.sendMessages([{type:'text', text:'ยื่นใบลาให้บุตรหลานเรียบร้อยแล้ว'}]); }catch(e){} }
+      const fresh = await api('parentInit', { line_user_id: PROFILE.userId });
+      if(fresh.status==='success'){ STATE.children=fresh.children; STATE.leaves=fresh.leaves; STATE.attendance=fresh.attendance; }
+      renderHome();
+    } else {
+      toast(res.message||'ส่งไม่สำเร็จ'); btn.disabled=false; btn.textContent='ส่งใบลา';
+    }
+  }catch(e){ toast('เกิดข้อผิดพลาด'); btn.disabled=false; btn.textContent='ส่งใบลา'; }
+}
+
+boot();
+</script>
+</body>
+</html>
