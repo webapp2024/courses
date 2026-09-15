@@ -43,8 +43,20 @@ function thaiDate(ymd){
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
 
 async function api(action, data){
-  const res = await fetch(GAS_API_URL, { method:'POST', body: JSON.stringify(Object.assign({action}, data||{})) });
-  return res.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(function(){ controller.abort(); }, 15000);
+  try{
+    const res = await fetch(GAS_API_URL, {
+      method:'POST',
+      body: JSON.stringify(Object.assign({action}, data||{})),
+      signal: controller.signal
+    });
+    const text = await res.text();
+    try{ return JSON.parse(text); }
+    catch(e){ throw new Error('API ตอบกลับไม่ใช่ข้อมูล JSON'); }
+  }finally{
+    clearTimeout(timeout);
+  }
 }
 
 async function boot(){
@@ -56,9 +68,9 @@ async function boot(){
     await liff.init({ liffId: LIFF_ID });
     if(!liff.isLoggedIn()){ liff.login(); return; }
     PROFILE = await liff.getProfile();
-    loadData();
+    await loadData();
   }catch(e){
-    render('<div class="notice">เชื่อมต่อ LIFF ไม่สำเร็จ: '+esc(e.message||e)+'</div>');
+    render('<div class="notice">เชื่อมต่อระบบไม่สำเร็จ: '+esc(e.message||e)+'</div>');
   }
 }
 
